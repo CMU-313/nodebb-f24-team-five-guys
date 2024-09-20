@@ -7,7 +7,7 @@ get:
       name: section
       schema:
         type: string
-        enum: ['joindate', 'online', 'sort-posts', 'sort-reputation', 'banned', 'flagged']
+        enum: ['joindate', 'online', 'sort-posts', 'sort-reputation', 'banned', 'flagged', 'followerCount']
       required: false
       description: Allows filtering of the user list via pre-defined sections
       example: 'joindate'
