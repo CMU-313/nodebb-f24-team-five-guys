@@ -23,6 +23,8 @@ define('forum/users', [
 
 		socket.removeListener('event:user_status_change', onUserStatusChange);
 		socket.on('event:user_status_change', onUserStatusChange);
+		const mostFollowersLink = $('<a href="/users?section=most-followers">Most Followers</a>');
+    	$('[component="user/list/menu"]').append(mostFollowersLink);
 	};
 
 	Users.handleSearch = function (params) {
@@ -74,7 +76,11 @@ define('forum/users', [
 			sortBy = 'postcount';
 		} else if (activeSection === 'sort-reputation') {
 			sortBy = 'reputation';
-		} else if (activeSection === 'users') {
+		} 
+		else if (activeSection === 'most-followers') {
+			sortBy = 'followers';
+		}
+		else if (activeSection === 'users') {
 			sortBy = 'joindate';
 		}
 		return sortBy;

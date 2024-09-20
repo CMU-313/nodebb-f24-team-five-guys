@@ -738,3 +738,24 @@ usersAPI.generateExport = async (caller, { uid, type }) => {
 		});
 	});
 };
+
+usersAPI.getMostPopular = async function (caller, data) {
+    const page = parseInt(data.page, 10) || 1;
+    const resultsPerPage = 50;
+    const start = Math.max(0, (page - 1) * resultsPerPage);
+    const stop = start + resultsPerPage - 1;
+
+    const [uids, count] = await Promise.all([
+        db.getSortedSetRevRange('users:followers', start, stop),
+        db.sortedSetCard('users:followers')
+    ]);
+
+    const userData = await user.getUsers(uids, caller.uid);
+    return {
+        users: userData,
+        pagination: {
+            page: page,
+            pageCount: Math.ceil(count / resultsPerPage)
+        }
+    };
+};

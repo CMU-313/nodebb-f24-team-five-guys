@@ -21,6 +21,7 @@ usersController.index = async function (req, res, next) {
 		'sort-reputation': usersController.getUsersSortedByReputation,
 		banned: usersController.getBannedUsers,
 		flagged: usersController.getFlaggedUsers,
+		'sort-followers': usersController.getUsersSortedByFollowers,
 	};
 
 	if (req.query.query) {
@@ -63,6 +64,10 @@ usersController.getOnlineUsers = async function (req, res) {
 	userData.anonymousUserCount = guests + hiddenCount;
 
 	await render(req, res, userData);
+};
+
+usersController.getUsersSortedByFollowers = async function (req, res) {
+	await usersController.renderUsersPage('users:followers', req, res);
 };
 
 usersController.getUsersSortedByPosts = async function (req, res) {
@@ -109,6 +114,7 @@ usersController.getUsers = async function (set, uid, query) {
 		'users:online': { title: '[[pages:users/online]]', crumb: '[[global:online]]' },
 		'users:banned': { title: '[[pages:users/banned]]', crumb: '[[user:banned]]' },
 		'users:flags': { title: '[[pages:users/most-flags]]', crumb: '[[users:most-flags]]' },
+		'users:followers': { title: '[[pages:users/most-followers]]', crumb: '[[users:most-followers]]' },
 	};
 
 	if (!setToData[set]) {
@@ -175,6 +181,10 @@ usersController.getUsersAndCount = async function (set, uid, start, stop) {
 				}
 			});
 			return userData;
+		}
+		else if (set === 'users:followers') {
+			const uids = await db.getSortedSetRevRange('users:followers', start, stop);
+			return await user.getUsers(uids, uid);
 		}
 		return await user.getUsersFromSet(set, uid, start, stop);
 	}
