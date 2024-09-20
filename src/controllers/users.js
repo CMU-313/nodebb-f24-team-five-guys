@@ -181,8 +181,7 @@ usersController.getUsersAndCount = async function (set, uid, start, stop) {
 				}
 			});
 			return userData;
-		}
-		else if (set === 'users:followers') {
+		} else if (set === 'users:followers') {
 			const uids = await db.getSortedSetRevRange('users:followers', start, stop);
 			return await user.getUsers(uids, uid);
 		}

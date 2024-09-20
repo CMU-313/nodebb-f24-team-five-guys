@@ -84,10 +84,14 @@ User.getUsers = async function (uids, uid) {
 	const userData = await User.getUsersWithFields(uids, [
 		'uid', 'username', 'userslug', 'picture', 'status',
 		'postcount', 'reputation', 'email:confirmed', 'lastonline',
-		'flags', 'banned', 'banned:expire', 'joindate',
+		'flags', 'banned', 'banned:expire', 'joindate', 'followerCount',
 	], uid);
 
 	return User.hidePrivateData(userData, uid);
+};
+
+User.getFollowerCount = async function (uid) {
+	return await db.setCount(`followers:${uid}`);
 };
 
 User.getStatus = function (userData) {
