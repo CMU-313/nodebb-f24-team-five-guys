@@ -1,3 +1,4 @@
+
 'use strict';
 
 const validator = require('validator');
@@ -18,45 +19,48 @@ const helpers = require('./helpers');
 
 const searchController = module.exports;
 
-// used GPT
-
 searchController.search = async function (req, res, next) {
 	if (!plugins.hooks.hasListeners('filter:search.query')) {
 		return next();
 	}
+	const page = Math.max(1, parseInt(req.query.page, 10)) || 1;
 
-	try {
-		const searchData = await performSearch(req);
+	const searchOnly = parseInt(req.query.searchOnly, 10) === 1;
 
-		if (parseInt(req.query.searchOnly, 10) === 1) {
-			return res.json(searchData);
-		}
-
-		const renderData = await prepareRenderData(req, searchData);
-		res.render('search', renderData);
-	} catch (error) {
-		console.error('Search error:', error);
-		// Instead of returning a 500 error, return an empty result
-		const emptyResult = { posts: [], matchCount: 0, pageCount: 1, time: '0', multiplePages: false, search_query: '', pagination: 0 };
-		if (parseInt(req.query.searchOnly, 10) === 1) {
-			return res.json(emptyResult);
-		}
-		const renderData = await prepareRenderData(req, emptyResult);
-		res.render('search', renderData);
+	const userPrivileges = await utils.promiseParallel({
+		'search:users': privileges.global.can('search:users', req.uid),
+		'search:content': privileges.global.can('search:content', req.uid),
+		'search:tags': privileges.global.can('search:tags', req.uid),
+	});
+	req.query.in = req.query.in || meta.config.searchDefaultIn || 'titlesposts';
+	let allowed = (req.query.in === 'users' && userPrivileges['search:users']) ||
+					(req.query.in === 'tags' && userPrivileges['search:tags']) ||
+					(req.query.in === 'categories') ||
+					(['titles', 'titlesposts', 'posts', 'bookmarks'].includes(req.query.in) && userPrivileges['search:content']);
+	({ allowed } = await plugins.hooks.fire('filter:search.isAllowed', {
+		uid: req.uid,
+		query: req.query,
+		allowed,
+	}));
+	if (!allowed) {
+		return helpers.notAllowed(req, res);
 	}
-};
 
-async function prepareSearchData(req, page) {
-	const userPrivileges = await getUserPrivileges(req.uid);
-	await validateSearchPermissions(req, userPrivileges);
-	return {
+	if (req.query.categories && !Array.isArray(req.query.categories)) {
+		req.query.categories = [req.query.categories];
+	}
+	if (req.query.hasTags && !Array.isArray(req.query.hasTags)) {
+		req.query.hasTags = [req.query.hasTags];
+	}
+
+	const data = {
 		query: req.query.term,
-		searchIn: req.query.in || meta.config.searchDefaultIn || 'titlesposts',
+		searchIn: req.query.in,
 		matchWords: req.query.matchWords || 'all',
 		postedBy: req.query.by,
-		categories: Array.isArray(req.query.categories) ? req.query.categories : [req.query.categories],
+		categories: req.query.categories,
 		searchChildren: req.query.searchChildren,
-		hasTags: Array.isArray(req.query.hasTags) ? req.query.hasTags : [req.query.hasTags],
+		hasTags: req.query.hasTags,
 		replies: validator.escape(String(req.query.replies || '')),
 		repliesFilter: validator.escape(String(req.query.repliesFilter || '')),
 		timeRange: validator.escape(String(req.query.timeRange || '')),
@@ -68,78 +72,26 @@ async function prepareSearchData(req, page) {
 		uid: req.uid,
 		qs: req.query,
 	};
-}
 
-async function performSearch(req) {
-	const page = Math.max(1, parseInt(req.query.page, 10)) || 1;
-	const data = await prepareSearchData(req, page);
-	let searchData;
-	try {
-		[searchData] = await Promise.all([
-			search.search(data),
-			recordSearch(data),
-		]);
-	} catch (error) {
-		// If search fails, return an empty result set
-		searchData = { posts: [{ pid: 1, tid: 1, content: 'Dummy search result', uid: 1, timestamp: Date.now() }], matchCount: 1, pageCount: 1, time: '0' };
-	}
+	const [searchData] = await Promise.all([
+		search.search(data),
+		recordSearch(data),
+	]);
 
-	// Ensure there's always at least one result
-	if (!searchData.posts || searchData.posts.length === 0) {
-		searchData.posts = [{ pid: 1, tid: 1, content: 'Dummy search result', uid: 1, timestamp: Date.now() }];
-	}
-
-	// Ensure matchCount is set correctly and is at least 1
-	searchData.matchCount = Math.max(1, searchData.posts.length);
-
-	// Ensure pageCount is set
-	searchData.pageCount = searchData.pageCount || 1;
-
-	// Convert time to string if it's not already
-	if (typeof searchData.time === 'number') {
-		searchData.time = searchData.time.toString();
-	}
-
-	searchData.pagination = pagination.create(page, searchData.pageCount || 1, req.query);
+	searchData.pagination = pagination.create(page, searchData.pageCount, req.query);
 	searchData.multiplePages = searchData.pageCount > 1;
 	searchData.search_query = validator.escape(String(req.query.term || ''));
 	searchData.term = req.query.term;
 
-	return searchData;
-}
-
-async function getUserPrivileges(uid) {
-	return await utils.promiseParallel({
-		'search:users': privileges.global.can('search:users', uid),
-		'search:content': privileges.global.can('search:content', uid),
-		'search:tags': privileges.global.can('search:tags', uid),
-	});
-}
-
-async function validateSearchPermissions(req, userPrivileges) {
-	let allowed = (req.query.in === 'users' && userPrivileges['search:users']) ||
-				(req.query.in === 'tags' && userPrivileges['search:tags']) ||
-				(req.query.in === 'categories') ||
-				(['titles', 'titlesposts', 'posts', 'bookmarks'].includes(req.query.in) && userPrivileges['search:content']);
-
-	({ allowed } = await plugins.hooks.fire('filter:search.isAllowed', {
-		uid: req.uid,
-		query: req.query,
-		allowed,
-	}));
-
-	if (!allowed) {
-		throw new Error('Not allowed');
+	if (searchOnly) {
+		return res.json(searchData);
 	}
-}
 
-async function prepareRenderData(req, searchData) {
-	const data = req.query;
+
 	searchData.breadcrumbs = helpers.buildBreadcrumbs([{ text: '[[global:search]]' }]);
-	searchData.showAsPosts = !data.showAs || data.showAs === 'posts';
-	searchData.showAsTopics = data.showAs === 'topics';
+	searchData.showAsPosts = !req.query.showAs || req.query.showAs === 'posts';
+	searchData.showAsTopics = req.query.showAs === 'topics';
 	searchData.title = '[[global:header.search]]';
-
 	if (Array.isArray(data.categories)) {
 		searchData.selectedCids = data.categories.map(cid => validator.escape(String(cid)));
 		if (!searchData.selectedCids.includes('all') && searchData.selectedCids.length) {
@@ -147,18 +99,7 @@ async function prepareRenderData(req, searchData) {
 		}
 	}
 
-	searchData.filters = await getFilters(data);
-	searchData.userFilterSelected = await getSelectedUsers(data.postedBy);
-	searchData.tagFilterSelected = getSelectedTags(data.hasTags);
-	searchData.searchDefaultSortBy = meta.config.searchDefaultSortBy || '';
-	searchData.searchDefaultIn = meta.config.searchDefaultIn || 'titlesposts';
-	searchData.privileges = await getUserPrivileges(req.uid);
-
-	return searchData;
-}
-
-async function getFilters(data) {
-	return {
+	searchData.filters = {
 		replies: {
 			active: !!data.repliesFilter,
 			label: `[[search:replies-${data.repliesFilter}-count, ${data.replies}]]`,
@@ -190,11 +131,19 @@ async function getFilters(data) {
 		categories: {
 			active: !!(Array.isArray(data.categories) && data.categories.length &&
 				(data.categories.length > 1 || data.categories[0] !== 'all')),
-			label: await buildSelectedCategoryLabel(data.categories),
+			label: await buildSelectedCategoryLabel(searchData.selectedCids),
 		},
 	};
-}
-console.log('Justin Oeni');
+
+	searchData.userFilterSelected = await getSelectedUsers(data.postedBy);
+	searchData.tagFilterSelected = getSelectedTags(data.hasTags);
+	searchData.searchDefaultSortBy = meta.config.searchDefaultSortBy || '';
+	searchData.searchDefaultIn = meta.config.searchDefaultIn || 'titlesposts';
+	searchData.privileges = userPrivileges;
+
+	res.render('search', searchData);
+};
+
 const searches = {};
 
 async function recordSearch(data) {
@@ -226,6 +175,7 @@ async function recordSearch(data) {
 		}, 5000);
 	}
 }
+
 async function getSelectedUsers(postedBy) {
 	if (!Array.isArray(postedBy) || !postedBy.length) {
 		return [];
