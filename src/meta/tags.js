@@ -42,19 +42,21 @@ Tags.parse = async (req, data, meta, link) => {
 		content: Meta.config.themeColor || '#ffffff',
 	}];
 
-	if (Meta.config.keywords && !isAPI) {
-		defaultTags.push({
-			name: 'keywords',
-			content: Meta.config.keywords,
-		});
-	}
+	if (!isAPI) {
+		if (Meta.config.keywords) {
+			defaultTags.push({
+				name: 'keywords',
+				content: Meta.config.keywords,
+			});
+		}
 
-	if (Meta.config['brand:logo'] && !isAPI) {
-		defaultTags.push({
-			name: 'msapplication-square150x150logo',
-			content: Meta.config['brand:logo'],
-			noEscape: true,
-		});
+		if (Meta.config['brand:logo']) {
+			defaultTags.push({
+				name: 'msapplication-square150x150logo',
+				content: Meta.config['brand:logo'],
+				noEscape: true,
+			});
+		}
 	}
 
 	const faviconPath = `${relative_path}/assets/uploads/system/favicon.ico`;
