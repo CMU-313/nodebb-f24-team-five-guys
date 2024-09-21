@@ -11,6 +11,8 @@
     "username-placeholder": "Enter Username",
     "password": "Password",
     "password-placeholder": "Enter Password",
+    "fullname": "Full Name",
+    "fullname-placeholder": "Enter Full Name",
     "confirm-password": "Confirm Password",
     "confirm-password-placeholder": "Confirm Password",
     "register-now-button": "Register Now",
