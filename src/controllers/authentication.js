@@ -88,10 +88,6 @@ authenticationController.register = async function (req, res) {
 			throw new Error('[[error:username-too-short]]');
 		}
 
-		if (!userData.fullname || userData.fullname.trim().length ===0){
-			throw new Error('[[error:fullname-required]]');
-		}
-
 		if (userData.username.length > meta.config.maximumUsernameLength) {
 			throw new Error('[[error:username-too-long]]');
 		}
