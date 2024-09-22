@@ -45,54 +45,7 @@ usersAPI.get = async (caller, { uid }) => {
 		throw new Error('[[error:no-privileges]]');
 	}
 	const userData = await user.getUserData(uid);
-	if (userData) {
-		userData.followerCount = await db.sortedSetScore('users:followers', uid) || 0;
-	}
 	return await user.hidePrivateData(userData, caller.uid);
-};
-
-usersAPI.get.schema = {
-	summary: 'Get user information',
-	parameters: [{
-		name: 'uid',
-		in: 'path',
-		required: true,
-		schema: {
-			type: 'integer',
-		},
-		description: 'User ID',
-	}],
-	responses: {
-		200: {
-			description: 'User information retrieved successfully',
-			content: {
-				'application/json': {
-					schema: {
-						type: 'object',
-						properties: {
-							uid: {
-								type: 'number',
-								description: 'User ID',
-							},
-							username: {
-								type: 'string',
-								description: 'Username',
-							},
-							email: {
-								type: 'string',
-								description: 'User email',
-							},
-							followerCount: {
-								type: 'number',
-								description: 'Number of followers',
-							},
-							// Add other relevant user properties
-						},
-					},
-				},
-			},
-		},
-	},
 };
 
 usersAPI.update = async function (caller, data) {
@@ -133,9 +86,7 @@ usersAPI.update = async function (caller, data) {
 
 	await user.updateProfile(caller.uid, data);
 	const userData = await user.getUserData(data.uid);
-	if (userData) {
-		userData.followerCount = await db.sortedSetScore('users:followers', data.uid) || 0;
-	}
+
 	if (userData.username !== oldUserData.username) {
 		await events.log({
 			type: 'username-change',
@@ -147,70 +98,6 @@ usersAPI.update = async function (caller, data) {
 		});
 	}
 	return userData;
-};
-
-usersAPI.update.schema = {
-	summary: 'Update user profile',
-	parameters: [{
-		name: 'uid',
-		in: 'path',
-		required: true,
-		schema: {
-			type: 'integer',
-		},
-		description: 'User ID',
-	}],
-	requestBody: {
-		required: true,
-		content: {
-			'application/json': {
-				schema: {
-					type: 'object',
-					properties: {
-						// Add properties that can be updated
-						username: {
-							type: 'string',
-						},
-						email: {
-							type: 'string',
-						},
-						// Add other updatable properties
-					},
-				},
-			},
-		},
-	},
-	responses: {
-		200: {
-			description: 'User updated successfully',
-			content: {
-				'application/json': {
-					schema: {
-						type: 'object',
-						properties: {
-							uid: {
-								type: 'number',
-								description: 'User ID',
-							},
-							username: {
-								type: 'string',
-								description: 'Username',
-							},
-							email: {
-								type: 'string',
-								description: 'User email',
-							},
-							followerCount: {
-								type: 'number',
-								description: 'Number of followers',
-							},
-							// Add other relevant user properties
-						},
-					},
-				},
-			},
-		},
-	},
 };
 
 usersAPI.delete = async function (caller, { uid, password }) {
@@ -879,50 +766,4 @@ usersAPI.getMostPopular = async function (caller, data) {
 	};
 };
 
-usersAPI.getMostPopular.schema = {
-	summary: 'Get users with most followers',
-	parameters: [{
-		name: 'page',
-		in: 'query',
-		description: 'Page number',
-		required: false,
-		schema: {
-			type: 'integer',
-			default: 1,
-		},
-	}],
-	responses: {
-		200: {
-			description: 'Successfully retrieved users with most followers',
-			content: {
-				'application/json': {
-					schema: {
-						type: 'object',
-						properties: {
-							users: {
-								type: 'array',
-								items: {
-									type: 'object',
-									properties: {
-										uid: { type: 'number' },
-										username: { type: 'string' },
-										followerCount: { type: 'number' },
-										// Add other relevant user properties
-									},
-								},
-							},
-							pagination: {
-								type: 'object',
-								properties: {
-									page: { type: 'number' },
-									pageCount: { type: 'number' },
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-	},
-};
 

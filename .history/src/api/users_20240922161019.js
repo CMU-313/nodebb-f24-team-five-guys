@@ -51,48 +51,60 @@ usersAPI.get = async (caller, { uid }) => {
 	return await user.hidePrivateData(userData, caller.uid);
 };
 
+usersAPI.get = async (caller, { uid }) => {
+    const canView = await privileges.global.can('view:users', caller.uid);
+    if (!canView) {
+        throw new Error('[[error:no-privileges]]');
+    }
+    const userData = await user.getUserData(uid);
+    if (userData) {
+        userData.followerCount = await db.sortedSetScore('users:followers', uid) || 0;
+    }
+    return await user.hidePrivateData(userData, caller.uid);
+};
+
 usersAPI.get.schema = {
-	summary: 'Get user information',
-	parameters: [{
-		name: 'uid',
-		in: 'path',
-		required: true,
-		schema: {
-			type: 'integer',
-		},
-		description: 'User ID',
-	}],
-	responses: {
-		200: {
-			description: 'User information retrieved successfully',
-			content: {
-				'application/json': {
-					schema: {
-						type: 'object',
-						properties: {
-							uid: {
-								type: 'number',
-								description: 'User ID',
-							},
-							username: {
-								type: 'string',
-								description: 'Username',
-							},
-							email: {
-								type: 'string',
-								description: 'User email',
-							},
-							followerCount: {
-								type: 'number',
-								description: 'Number of followers',
-							},
-							// Add other relevant user properties
-						},
-					},
-				},
-			},
-		},
-	},
+    summary: 'Get user information',
+    parameters: [{
+        name: 'uid',
+        in: 'path',
+        required: true,
+        schema: {
+            type: 'integer',
+        },
+        description: 'User ID',
+    }],
+    responses: {
+        '200': {
+            description: 'User information retrieved successfully',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            uid: {
+                                type: 'number',
+                                description: 'User ID',
+                            },
+                            username: {
+                                type: 'string',
+                                description: 'Username',
+                            },
+                            email: {
+                                type: 'string',
+                                description: 'User email',
+                            },
+                            followerCount: {
+                                type: 'number',
+                                description: 'Number of followers',
+                            },
+                            // Add other relevant user properties
+                        },
+                    },
+                },
+            },
+        },
+    },
 };
 
 usersAPI.update = async function (caller, data) {
@@ -181,7 +193,7 @@ usersAPI.update.schema = {
 		},
 	},
 	responses: {
-		200: {
+		'200': {
 			description: 'User updated successfully',
 			content: {
 				'application/json': {

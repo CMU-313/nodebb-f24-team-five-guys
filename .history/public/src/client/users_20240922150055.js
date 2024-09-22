@@ -23,7 +23,9 @@ define('forum/users', [
 
 		socket.removeListener('event:user_status_change', onUserStatusChange);
 		socket.on('event:user_status_change', onUserStatusChange);
-		const mostFollowersLink = $('<a class="btn-ghost ff-secondary fw-semibold" href="/users?section=most-followers">Most Followers</a>'); $('[component="user/list/menu"]').append(mostFollowersLink);
+		// const mostFollowersLink = $('<a href="/users?section=most-followers">Most Followers</a>'); $('[component="user/list/menu"]').append(mostFollowersLink);
+		const mostFollowersLink = $('<a href="/users?section=most-followers">Most Followers</a>'); $('[component="user/list/menu"]').append(mostFollowersLink);
+
 	};
 
 	Users.handleSearch = function (params) {

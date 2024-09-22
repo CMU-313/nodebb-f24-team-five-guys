@@ -181,7 +181,7 @@ usersAPI.update.schema = {
 		},
 	},
 	responses: {
-		200: {
+		'200: {
 			description: 'User updated successfully',
 			content: {
 				'application/json': {

@@ -33,9 +33,29 @@ Users.exists = async (req, res) => {
 };
 
 Users.get = async (req, res) => {
-	helpers.formatApiResponse(200, res, await api.users.get(req, { ...req.params }));
+	const userData = await api.users.get(req, { ...req.params });
+	// Ensure followerCount is included in the response
+	if (userData && !userData.followerCount) {
+		userData.followerCount = await user.getFollowerCount(userData.uid);
+	}
+	helpers.formatApiResponse(200, res, userData);
+
+	// helpers.formatApiResponse(200, res, await api.users.get(req, { ...req.params }));
 };
 
+Users.getMostFollowers = async (req, res) => {
+	const result = await api.users.getMostPopular(req, { ...req.query });
+	// Ensure followerCount is included for each user
+	if (result && result.users) {
+		for (const userData of result.users) {
+			if (!userData.followerCount) {
+				userData.followerCount = user.getFollowerCount(userData.uid);
+			}
+		}
+	}
+	
+	helpers.formatApiResponse(200, res, result);
+};
 
 Users.update = async (req, res) => {
 	const userObj = await api.users.update(req, { ...req.body, uid: req.params.uid });

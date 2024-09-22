@@ -51,50 +51,6 @@ usersAPI.get = async (caller, { uid }) => {
 	return await user.hidePrivateData(userData, caller.uid);
 };
 
-usersAPI.get.schema = {
-	summary: 'Get user information',
-	parameters: [{
-		name: 'uid',
-		in: 'path',
-		required: true,
-		schema: {
-			type: 'integer',
-		},
-		description: 'User ID',
-	}],
-	responses: {
-		200: {
-			description: 'User information retrieved successfully',
-			content: {
-				'application/json': {
-					schema: {
-						type: 'object',
-						properties: {
-							uid: {
-								type: 'number',
-								description: 'User ID',
-							},
-							username: {
-								type: 'string',
-								description: 'Username',
-							},
-							email: {
-								type: 'string',
-								description: 'User email',
-							},
-							followerCount: {
-								type: 'number',
-								description: 'Number of followers',
-							},
-							// Add other relevant user properties
-						},
-					},
-				},
-			},
-		},
-	},
-};
-
 usersAPI.update = async function (caller, data) {
 	if (!caller.uid) {
 		throw new Error('[[error:invalid-uid]]');
@@ -147,70 +103,6 @@ usersAPI.update = async function (caller, data) {
 		});
 	}
 	return userData;
-};
-
-usersAPI.update.schema = {
-	summary: 'Update user profile',
-	parameters: [{
-		name: 'uid',
-		in: 'path',
-		required: true,
-		schema: {
-			type: 'integer',
-		},
-		description: 'User ID',
-	}],
-	requestBody: {
-		required: true,
-		content: {
-			'application/json': {
-				schema: {
-					type: 'object',
-					properties: {
-						// Add properties that can be updated
-						username: {
-							type: 'string',
-						},
-						email: {
-							type: 'string',
-						},
-						// Add other updatable properties
-					},
-				},
-			},
-		},
-	},
-	responses: {
-		200: {
-			description: 'User updated successfully',
-			content: {
-				'application/json': {
-					schema: {
-						type: 'object',
-						properties: {
-							uid: {
-								type: 'number',
-								description: 'User ID',
-							},
-							username: {
-								type: 'string',
-								description: 'Username',
-							},
-							email: {
-								type: 'string',
-								description: 'User email',
-							},
-							followerCount: {
-								type: 'number',
-								description: 'Number of followers',
-							},
-							// Add other relevant user properties
-						},
-					},
-				},
-			},
-		},
-	},
 };
 
 usersAPI.delete = async function (caller, { uid, password }) {

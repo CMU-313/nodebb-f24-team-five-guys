@@ -33,7 +33,7 @@ Users.exists = async (req, res) => {
 };
 
 Users.get = async (req, res) => {
-	helpers.formatApiResponse(200, res, await api.users.get(req, { ...req.params }));
+	// helpers.formatApiResponse(200, res, await api.users.get(req, { ...req.params }));
 };
 
 

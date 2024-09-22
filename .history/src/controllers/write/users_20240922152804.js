@@ -36,7 +36,6 @@ Users.get = async (req, res) => {
 	helpers.formatApiResponse(200, res, await api.users.get(req, { ...req.params }));
 };
 
-
 Users.update = async (req, res) => {
 	const userObj = await api.users.update(req, { ...req.body, uid: req.params.uid });
 	helpers.formatApiResponse(200, res, userObj);
