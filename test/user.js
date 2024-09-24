@@ -97,7 +97,7 @@ describe('User', () => {
 		});
 
 		it('should have a valid email, if using an email', (done) => {
-			User.create({ username: userData.username, password: userData.password, email: 'fakeMail' }, (err) => {
+			User.create({ username: userData.username, fullname: userData.fullname, password: userData.password, email: 'fakeMail' }, (err) => {
 				assert(err);
 				assert.equal(err.message, '[[error:invalid-email]]');
 				done();
@@ -1771,6 +1771,7 @@ describe('User', () => {
 				'password-confirm': '123456',
 				email: '<script>alert("ok")<script>reject@me.com',
 				gdpr_consent: true,
+				fullname: 'rejectme',
 			});
 			const { jar } = await helpers.loginUser('admin', '123456');
 			const { body: { users } } = await request.get(`${nconf.get('url')}/api/admin/manage/registration`, { jar });
@@ -1785,6 +1786,7 @@ describe('User', () => {
 				'password-confirm': '123456',
 				email: '<script>alert("ok")<script>reject@me.com',
 				gdpr_consent: true,
+				fullname: 'rejustme',
 			});
 			assert.equal(body, '[[error:username-taken]]');
 		});
@@ -1796,9 +1798,12 @@ describe('User', () => {
 				'password-confirm': '123456',
 				email: '<script>alert("ok")<script>reject@me.com',
 				gdpr_consent: true,
+				fullname: 'rejustmenew',
 			});
 			assert.equal(body, '[[error:email-taken]]');
 		});
+
+		//remember to create tests for fullname as well
 
 		it('should reject user registration', async () => {
 			await socketUser.rejectRegistration({ uid: adminUid }, { username: 'rejectme' });
@@ -1813,6 +1818,7 @@ describe('User', () => {
 				'password-confirm': '123456',
 				email: 'accept@me.com',
 				gdpr_consent: true,
+				fullname: 'acceptme'
 			});
 
 			const uid = await socketUser.acceptRegistration({ uid: adminUid }, { username: 'acceptme' });
@@ -1829,6 +1835,7 @@ describe('User', () => {
 				'password-confirm': '123456',
 				email: 'invalidtest@test.com',
 				gdpr_consent: true,
+				fullname: 'invalidname\r\n'
 			});
 
 			const users = await db.getSortedSetRange('registration:queue', 0, -1);
@@ -2102,6 +2109,7 @@ describe('User', () => {
 					email: email,
 					gdpr_consent: true,
 					token: token,
+					fullname: 'invite5',
 				});
 
 				const memberships = await groups.isMemberOfGroups(body.uid, groupsToJoin);
