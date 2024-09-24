@@ -1803,7 +1803,17 @@ describe('User', () => {
 			assert.equal(body, '[[error:email-taken]]');
 		});
 
-		// remember to create tests for fullname as well
+		// new check added
+		it('should fail to add user to queue if fullname is not properly entered or left blank', async () => {
+			const { body } = await helpers.registerUser({
+				username: 'rejectmenew',
+				password: '123456',
+				'password-confirm': '123456',
+				email: '<script>alert("ok")<script>reject@me.com',
+				gdpr_consent: true,
+			});
+			assert.equal(body, '[[error:fullname-required]]');
+		});
 
 		it('should reject user registration', async () => {
 			await socketUser.rejectRegistration({ uid: adminUid }, { username: 'rejectme' });
@@ -1831,6 +1841,21 @@ describe('User', () => {
 		it('should trim username and add user to registration queue', async () => {
 			await helpers.registerUser({
 				username: 'invalidname\r\n',
+				password: '123456',
+				'password-confirm': '123456',
+				email: 'invalidtest@test.com',
+				gdpr_consent: true,
+				fullname: 'invalidname',
+			});
+
+			const users = await db.getSortedSetRange('registration:queue', 0, -1);
+			assert.equal(users[0], 'invalidname');
+		});
+
+		// new check added
+		it('should trim fullname and add user to registration queue', async () => {
+			await helpers.registerUser({
+				username: 'invalidname',
 				password: '123456',
 				'password-confirm': '123456',
 				email: 'invalidtest@test.com',
