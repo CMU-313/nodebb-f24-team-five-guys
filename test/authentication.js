@@ -385,7 +385,7 @@ describe('authentication', () => {
 			username: 'anotheruser',
 			password: 'anotherpwd',
 			gdpr_consent: 1,
-			fullname: 'anotheruser'
+			fullname: 'anotheruser',
 		});
 		meta.config.registrationApprovalType = 'normal';
 		assert.equal(response.statusCode, 200);

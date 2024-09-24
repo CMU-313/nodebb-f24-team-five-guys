@@ -1803,7 +1803,7 @@ describe('User', () => {
 			assert.equal(body, '[[error:email-taken]]');
 		});
 
-		//remember to create tests for fullname as well
+		// remember to create tests for fullname as well
 
 		it('should reject user registration', async () => {
 			await socketUser.rejectRegistration({ uid: adminUid }, { username: 'rejectme' });
@@ -1818,7 +1818,7 @@ describe('User', () => {
 				'password-confirm': '123456',
 				email: 'accept@me.com',
 				gdpr_consent: true,
-				fullname: 'acceptme'
+				fullname: 'acceptme',
 			});
 
 			const uid = await socketUser.acceptRegistration({ uid: adminUid }, { username: 'acceptme' });
@@ -1835,7 +1835,7 @@ describe('User', () => {
 				'password-confirm': '123456',
 				email: 'invalidtest@test.com',
 				gdpr_consent: true,
-				fullname: 'invalidname\r\n'
+				fullname: 'invalidname\r\n',
 			});
 
 			const users = await db.getSortedSetRange('registration:queue', 0, -1);
