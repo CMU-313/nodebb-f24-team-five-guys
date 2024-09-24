@@ -148,6 +148,7 @@ describe('email confirmation (v3 api)', () => {
 			password: 'derpioansdosa',
 			email: 'b@c.com',
 			gdpr_consent: true,
+			fullname: 'fake-user',
 		});
 
 		({ body: userObj, jar } = await helpers.registerUser({
@@ -155,6 +156,7 @@ describe('email confirmation (v3 api)', () => {
 			password: 'abcdef',
 			email: 'test@example.org',
 			gdpr_consent: true,
+			fullname: 'email-test',
 		}));
 	});
 
