@@ -40,5 +40,14 @@ get:
                           properties:
                             isOwner:
                               type: boolean
+                              description: Whether the user is the owner of the room
                             canKick:
                               type: boolean
+                              description: Whether the user has permission to kick other users
+                            followerCount:
+                              type: integer
+                              description: The number of followers the user has
+                          required:
+                            - isOwner
+                            - canKick
+                            - followerCount

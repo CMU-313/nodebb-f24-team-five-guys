@@ -69,6 +69,8 @@ get:
                           type: number
                           description: A UNIX timestamp representing the moment the user's account was
                             created
+                        followerCount:
+                          type: number
                         icon:text:
                           type: string
                           description: A single-letter representation of a username. This is used in the

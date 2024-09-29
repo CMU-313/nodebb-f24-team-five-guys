@@ -2,7 +2,7 @@ get:
   tags:
     - groups
   summary: list group members
-  description: This operation returns a list of members in a user groups. Group owners (if any) are floated to the top of the returned users.
+  description: This operation returns a list of members in a user group. Group owners (if any) are floated to the top of the returned users.
   parameters:
     - in: path
       name: slug
@@ -16,7 +16,7 @@ get:
       schema:
         type: string
       required: false
-      description: >
+      description: |
         A keyword search query.
 
         This parameter conflicts with `after`. If both are present, `after` is ignored.
@@ -26,7 +26,7 @@ get:
       schema:
         type: string
       required: false
-      description: >
+      description: |
         Offset returned results.
 
         This parameter conflicts with `query`. If both are present, this parameter is ignored.
@@ -53,6 +53,10 @@ get:
                           properties:
                             isOwner:
                               type: boolean
+                              description: Whether the user is the owner of the group
+                            followerCount:
+                              type: integer
+                              description: The number of followers the user has
                   matchCount:
                     type: number
                     nullable: true

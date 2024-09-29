@@ -83,7 +83,7 @@ UserObj:
     flags:
       type: number
       example: 0
-    followercount:
+    followerCount:
       type: number
       example: 2
     followingcount:
