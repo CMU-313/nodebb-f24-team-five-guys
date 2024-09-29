@@ -67,7 +67,7 @@ usersController.getOnlineUsers = async function (req, res) {
 };
 
 usersController.getUsersSortedByFollowers = async function (req, res) {
-	await usersController.renderUsersPage('users:followers', req, res);
+	await usersController.renderUsersPage('users:followerCount', req, res);
 };
 
 usersController.getUsersSortedByPosts = async function (req, res) {
@@ -114,7 +114,7 @@ usersController.getUsers = async function (set, uid, query) {
 		'users:online': { title: '[[pages:users/online]]', crumb: '[[global:online]]' },
 		'users:banned': { title: '[[pages:users/banned]]', crumb: '[[user:banned]]' },
 		'users:flags': { title: '[[pages:users/most-flags]]', crumb: '[[users:most-flags]]' },
-		'users:followers': { title: '[[pages:users/most-followers]]', crumb: '[[users:most-followers]]' },
+		'users:followerCount': { title: '[[pages:users/most-followers]]', crumb: '[[users:most-followers]]' },
 	};
 
 	if (!setToData[set]) {
@@ -155,14 +155,18 @@ usersController.getUsers = async function (set, uid, query) {
 
 usersController.getUsersAndCount = async function (set, uid, start, stop) {
 	async function getCount() {
+		// Get the count of users in the specified set
 		if (set === 'users:online') {
 			return await db.sortedSetCount('users:online', Date.now() - 86400000, '+inf');
 		} else if (set === 'users:banned' || set === 'users:flags') {
 			return await db.sortedSetCard(set);
 		}
+		// Default: return the total number of users
 		return await db.getObjectField('global', 'userCount');
 	}
+
 	async function getUsers() {
+		// Fetch users currently online
 		if (set === 'users:online') {
 			const count = parseInt(stop, 10) === -1 ? stop : stop - start + 1;
 			const data = await db.getSortedSetRevRangeByScoreWithScores(set, start, count, '+inf', Date.now() - 86400000);
@@ -181,40 +185,77 @@ usersController.getUsersAndCount = async function (set, uid, start, stop) {
 				}
 			});
 			return userData;
-		} else if (set === 'users:followers') {
-			const uids = await db.getSortedSetRevRange('users:followers', start, stop);
-			return await user.getUsers(uids, uid);
+		} else if (set === 'users:followerCount') {
+			// Fetch users based on their follower counts
+			const uids = await db.getSortedSetRevRange('users:followerCount', start, stop);
+			const users = await user.getUsers(uids, uid);
+
+			// Fetch follower count for each user and assign it to the followerCount field
+			const followerCounts = await Promise.all(
+				uids.map(async (userId) => {
+					// Fetch the follower count for the user
+					const count = await db.sortedSetCard(`followerCount:${userId}`);
+					return count || 0; // Return 0 if no followers
+				})
+			);
+
+			// Add follower count to each user object
+			users.forEach((user, index) => {
+				user.followerCount = followerCounts[index] || 0;
+			});
+			console.log("AAA",users);
+			return users;
 		}
+
+		// Fetch users based on other sets
 		return await user.getUsersFromSet(set, uid, start, stop);
 	}
+
+	// Get users and their count in parallel
 	const [usersData, count] = await Promise.all([
 		getUsers(),
 		getCount(),
 	]);
+
+	// Return user data and count
 	return {
 		users: usersData.filter(user => user && parseInt(user.uid, 10)),
 		count: count,
 	};
 };
 
+
 async function render(req, res, data) {
-	const { registrationType } = meta.config;
+    const { registrationType } = meta.configs;  // Change to meta.configs
 
-	data.maximumInvites = meta.config.maximumInvites;
-	data.inviteOnly = registrationType === 'invite-only' || registrationType === 'admin-invite-only';
-	data.adminInviteOnly = registrationType === 'admin-invite-only';
-	data.invites = await user.getInvitesNumber(req.uid);
+    data.maximumInvites = meta.configs.maximumInvites;  // Change to meta.configs
+    data.inviteOnly = registrationType === 'invite-only' || registrationType === 'admin-invite-only';
+    data.adminInviteOnly = registrationType === 'admin-invite-only';
+    data.invites = await user.getInvitesNumber(req.uid);
 
-	data.showInviteButton = false;
-	if (data.adminInviteOnly) {
-		data.showInviteButton = await privileges.users.isAdministrator(req.uid);
-	} else if (req.loggedIn) {
-		const canInvite = await privileges.users.hasInvitePrivilege(req.uid);
-		data.showInviteButton = canInvite && (!data.maximumInvites || data.invites < data.maximumInvites);
-	}
+    data.showInviteButton = false;
+    if (data.adminInviteOnly) {
+        data.showInviteButton = await privileges.users.isAdministrator(req.uid);
+    } else if (req.loggedIn) {
+        const canInvite = await privileges.users.hasInvitePrivilege(req.uid);
+        data.showInviteButton = canInvite && (!data.maximumInvites || data.invites < data.maximumInvites);
+    }
 
-	data['reputation:disabled'] = meta.config['reputation:disabled'];
+    data['reputation:disabled'] = meta.configs['reputation:disabled'];  // Change to meta.configs
 
-	res.append('X-Total-Count', data.userCount);
-	res.render('users', data);
+    // Ensure that every user has the 'followerCount' property
+    if (data.users && Array.isArray(data.users)) {
+        data.users.forEach(user => {
+            if (!user.hasOwnProperty('followerCount')) {
+                user.followerCount = 0; // Set default to 0 if it's missing
+            }
+        });
+    }
+
+    // Add total user count to headers
+    res.append('X-Total-Count', data.userCount);
+
+    // Render the users page with the data
+    res.render('users', data);
 }
+
