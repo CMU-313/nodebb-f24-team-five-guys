@@ -60,6 +60,19 @@ Categories.getCategoryById = async function (data) {
 	category.isIgnored = watchState[0] === Categories.watchStates.ignoring;
 	category.parent = parent;
 
+	// Implement user filter functionality
+	if (data.userFilter) {
+		const userSlug = utils.slugify(data.userFilter);
+		const uid = await user.getUidByUserslug(userSlug);
+		if (uid) {
+			category.topics = category.topics.filter(topic => topic.uid === uid);
+			category.topic_count = category.topics.length;
+		} else {
+			category.topics = [];
+			category.topic_count = 0;
+		}
+	}
+
 	calculateTopicPostCount(category);
 	const result = await plugins.hooks.fire('filter:category.get', {
 		category: category,

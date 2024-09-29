@@ -23,14 +23,14 @@ module.exports = function (Categories) {
 		topicsData = await user.blocks.filter(data.uid, topicsData);
 
 		// Add this block to handle user filtering
-		if (data.userFilter) {
-			const authorUid = await user.getUidByUsername(data.userFilter);
-			if (authorUid) {
-				topicsData = topicsData.filter(topic => topic.uid === authorUid);
-			} else {
-				topicsData = [];
-			}
-		}
+		// if (data.userFilter) {
+		// 	const authorUid = await user.getUidByUsername(data.userFilter);
+		// 	if (authorUid) {
+		// 		topicsData = topicsData.filter(topic => topic.uid === authorUid);
+		// 	} else {
+		// 		topicsData = [];
+		// 	}
+		// }
 
 		console.log('Filtered topics count:', topicsData.length); // Debug log
 

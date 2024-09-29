@@ -149,27 +149,14 @@ define('forum/category', [
 		// 	});
 		// });
 		let filterTimeout;
-		filterInput.on('input', function () {
-			clearTimeout(filterTimeout);
-			filterTimeout = setTimeout(() => {
-				userFilter = $(this).val().trim();
-				console.log('Client-side userFilter:', userFilter); // Debug log
-				reloadTopics();
-			}, 300); // 300ms delay
-		});
-	}
-	function reloadTopics() {
-		$('[component="category/topic"]').remove();
-		loadTopicsAfter(0, 'bottom', function (data, done) {
-			console.log('Received topics:', data.topics.length); // Debug log
-			if (data.topics.length === 0) {
-				$('[component="category"]').append('<div class="alert alert-info" id="category-no-topics">No topics found.</div>');
-			} else {
-				$('#category-no-topics').remove();
-			}
-			hooks.fire('action:topics.loaded', { topics: data.topics });
-			done();
-		});
+    filterInput.on('input', function () {
+        clearTimeout(filterTimeout);
+        filterTimeout = setTimeout(() => {
+            userFilter = $(this).val().trim();
+            console.log('Client-side userFilter:', userFilter); // Debug log
+            reloadTopics();
+        }, 300); // 300ms delay
+    });
 	}
 
 	function loadTopicsAfter(after, direction, callback) {

@@ -22,7 +22,7 @@ module.exports = function (Categories) {
 		let topicsData = await topics.getTopicsByTids(tids, data.uid);
 		topicsData = await user.blocks.filter(data.uid, topicsData);
 
-		// Add this block to handle user filtering
+		Add this block to handle user filtering
 		if (data.userFilter) {
 			const authorUid = await user.getUidByUsername(data.userFilter);
 			if (authorUid) {

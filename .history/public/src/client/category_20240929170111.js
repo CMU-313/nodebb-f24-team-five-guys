@@ -94,7 +94,6 @@ define('forum/category', [
 		});
 	}
 
-
 	function handleLoadMoreSubcategories() {
 		$('[component="category/load-more-subcategories"]').on('click', async function () {
 			const btn = $(this);
@@ -139,36 +138,14 @@ define('forum/category', [
 		// 	});
 		// });
 
-		// filterInput.on('input', function () {
-		// 	userFilter = $(this).val().trim();
-		// 	console.log('Client-side userFilter:', userFilter); // Debug log
-		// 	loadTopicsAfter(0, 'bottom', function (data, done) {
-		// 		console.log('Received topics:', data.topics.length); // Debug log
-		// 		hooks.fire('action:topics.loaded', { topics: data.topics });
-		// 		done();
-		// 	});
-		// });
-		let filterTimeout;
 		filterInput.on('input', function () {
-			clearTimeout(filterTimeout);
-			filterTimeout = setTimeout(() => {
-				userFilter = $(this).val().trim();
-				console.log('Client-side userFilter:', userFilter); // Debug log
-				reloadTopics();
-			}, 300); // 300ms delay
-		});
-	}
-	function reloadTopics() {
-		$('[component="category/topic"]').remove();
-		loadTopicsAfter(0, 'bottom', function (data, done) {
-			console.log('Received topics:', data.topics.length); // Debug log
-			if (data.topics.length === 0) {
-				$('[component="category"]').append('<div class="alert alert-info" id="category-no-topics">No topics found.</div>');
-			} else {
-				$('#category-no-topics').remove();
-			}
-			hooks.fire('action:topics.loaded', { topics: data.topics });
-			done();
+			userFilter = $(this).val().trim();
+			console.log('Client-side userFilter:', userFilter); // Debug log
+			loadTopicsAfter(0, 'bottom', function (data, done) {
+				console.log('Received topics:', data.topics.length); // Debug log
+				hooks.fire('action:topics.loaded', { topics: data.topics });
+				done();
+			});
 		});
 	}
 
@@ -197,5 +174,27 @@ define('forum/category', [
 
 	return Category;
 
-	
+	let filterTimeout;
+filterInput.on('input', function () {
+    clearTimeout(filterTimeout);
+    filterTimeout = setTimeout(() => {
+        userFilter = $(this).val().trim();
+        console.log('Client-side userFilter:', userFilter); // Debug log
+        reloadTopics();
+    }, 300); // 300ms delay
+});
+
+function reloadTopics() {
+    $('[component="category/topic"]').remove();
+    loadTopicsAfter(0, 'bottom', function (data, done) {
+        console.log('Received topics:', data.topics.length); // Debug log
+        if (data.topics.length === 0) {
+            $('[component="category"]').append('<div class="alert alert-info" id="category-no-topics">No topics found.</div>');
+        } else {
+            $('#category-no-topics').remove();
+        }
+        hooks.fire('action:topics.loaded', { topics: data.topics });
+        done();
+    });
+}
 });

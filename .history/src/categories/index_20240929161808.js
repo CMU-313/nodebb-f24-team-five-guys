@@ -11,7 +11,6 @@ const privileges = require('../privileges');
 const cache = require('../cache');
 const meta = require('../meta');
 
-
 const Categories = module.exports;
 
 require('./data')(Categories);
@@ -59,6 +58,19 @@ Categories.getCategoryById = async function (data) {
 	category.isNotWatched = watchState[0] === Categories.watchStates.notwatching;
 	category.isIgnored = watchState[0] === Categories.watchStates.ignoring;
 	category.parent = parent;
+
+	// Implement user filter functionality
+    if (data.userFilter) {
+        const userSlug = utils.slugify(data.userFilter);
+        const uid = await user.getUidByUserslug(userSlug);
+        if (uid) {
+            category.topics = category.topics.filter(topic => topic.uid === uid);
+            category.topic_count = category.topics.length;
+        } else {
+            category.topics = [];
+            category.topic_count = 0;
+        }
+    }
 
 	calculateTopicPostCount(category);
 	const result = await plugins.hooks.fire('filter:category.get', {

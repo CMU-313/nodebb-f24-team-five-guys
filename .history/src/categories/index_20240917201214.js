@@ -11,7 +11,6 @@ const privileges = require('../privileges');
 const cache = require('../cache');
 const meta = require('../meta');
 
-
 const Categories = module.exports;
 
 require('./data')(Categories);

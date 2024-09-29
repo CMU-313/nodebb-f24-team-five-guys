@@ -15,10 +15,6 @@ module.exports = function (Categories) {
 	Categories.getCategoryTopics = async function (data) {
 		let results = await plugins.hooks.fire('filter:category.topics.prepare', data);
 		// const tids = await Categories.getTopicIds(results);
-		const tids = await Categories.getTopicIds({
-			...results,
-			userFilter: data.userFilter,
-		});
 		let topicsData = await topics.getTopicsByTids(tids, data.uid);
 		topicsData = await user.blocks.filter(data.uid, topicsData);
 

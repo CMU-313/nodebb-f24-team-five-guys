@@ -158,19 +158,6 @@ define('forum/category', [
 			}, 300); // 300ms delay
 		});
 	}
-	function reloadTopics() {
-		$('[component="category/topic"]').remove();
-		loadTopicsAfter(0, 'bottom', function (data, done) {
-			console.log('Received topics:', data.topics.length); // Debug log
-			if (data.topics.length === 0) {
-				$('[component="category"]').append('<div class="alert alert-info" id="category-no-topics">No topics found.</div>');
-			} else {
-				$('#category-no-topics').remove();
-			}
-			hooks.fire('action:topics.loaded', { topics: data.topics });
-			done();
-		});
-	}
 
 	function loadTopicsAfter(after, direction, callback) {
 		callback = callback || function () {};

@@ -77,7 +77,7 @@ categoryController.get = async function (req, res, next) {
 
 	const sort = validSorts.includes(req.query.sort) ? req.query.sort : userSettings.categoryTopicSort;
 
-	console.log('Controller userFilter:', req.query.userFilter); // Debug log
+
 	const categoryData = await categories.getCategoryById({
 		uid: req.uid,
 		cid: cid,
