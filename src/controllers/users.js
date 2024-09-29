@@ -203,7 +203,6 @@ usersController.getUsersAndCount = async function (set, uid, start, stop) {
 			users.forEach((user, index) => {
 				user.followerCount = followerCounts[index] || 0;
 			});
-			console.log("AAA",users);
 			return users;
 		}
 
@@ -226,36 +225,37 @@ usersController.getUsersAndCount = async function (set, uid, start, stop) {
 
 
 async function render(req, res, data) {
-    const { registrationType } = meta.configs;  // Change to meta.configs
+	const { registrationType } = meta.configs; // Change to meta.configs
 
-    data.maximumInvites = meta.configs.maximumInvites;  // Change to meta.configs
-    data.inviteOnly = registrationType === 'invite-only' || registrationType === 'admin-invite-only';
-    data.adminInviteOnly = registrationType === 'admin-invite-only';
-    data.invites = await user.getInvitesNumber(req.uid);
+	data.maximumInvites = meta.configs.maximumInvites !== undefined ? meta.configs.maximumInvites : 0;
+	data.inviteOnly = registrationType === 'invite-only' || registrationType === 'admin-invite-only';
+	data.adminInviteOnly = registrationType === 'admin-invite-only';
+	data.invites = await user.getInvitesNumber(req.uid);
 
-    data.showInviteButton = false;
-    if (data.adminInviteOnly) {
-        data.showInviteButton = await privileges.users.isAdministrator(req.uid);
-    } else if (req.loggedIn) {
-        const canInvite = await privileges.users.hasInvitePrivilege(req.uid);
-        data.showInviteButton = canInvite && (!data.maximumInvites || data.invites < data.maximumInvites);
-    }
+	data.showInviteButton = false;
+	if (data.adminInviteOnly) {
+		data.showInviteButton = await privileges.users.isAdministrator(req.uid);
+	} else if (req.loggedIn) {
+		const canInvite = await privileges.users.hasInvitePrivilege(req.uid);
+		data.showInviteButton = canInvite && (!data.maximumInvites || data.invites < data.maximumInvites);
+	}
 
-    data['reputation:disabled'] = meta.configs['reputation:disabled'];  // Change to meta.configs
+	data['reputation:disabled'] = meta.configs['reputation:disabled'] !== undefined ? meta.configs['reputation:disabled'] : false;
 
-    // Ensure that every user has the 'followerCount' property
-    if (data.users && Array.isArray(data.users)) {
-        data.users.forEach(user => {
-            if (!user.hasOwnProperty('followerCount')) {
-                user.followerCount = 0; // Set default to 0 if it's missing
-            }
-        });
-    }
 
-    // Add total user count to headers
-    res.append('X-Total-Count', data.userCount);
+	// Ensure that every user has the 'followerCount' property
+	if (data.users && Array.isArray(data.users)) {
+		data.users.forEach((user) => {
+			if (!user.hasOwnProperty('followerCount')) {
+				user.followerCount = 0; // Set default to 0 if it's missing
+			}
+		});
+	}
 
-    // Render the users page with the data
-    res.render('users', data);
+	// Add total user count to headers
+	res.append('X-Total-Count', data.userCount);
+
+	// Render the users page with the data
+	res.render('users', data);
 }
 
