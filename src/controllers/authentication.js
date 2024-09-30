@@ -92,9 +92,13 @@ authenticationController.register = async function (req, res) {
 			throw new Error('[[error:username-too-long]]');
 		}
 
-		if (!userData.fullname || userData.fullname.trim().length === 0) {
-			throw new Error('[[error:fullname-required]]');
-		}
+		if (!userData.fullname) {
+            throw new Error('[[error:fullname-required]]');
+        }
+
+        if (userData.fullname.length > 255 || userData.fullname.trim().length === 0 || validator.isURL(userData.fullname)) {
+            throw new Error('[[error:invalid-fullname]]');
+        }
 
 		if (userData.password !== userData['password-confirm']) {
 			throw new Error('[[user:change-password-error-match]]');

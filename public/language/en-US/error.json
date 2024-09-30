@@ -16,6 +16,7 @@
     "invalid-username": "Invalid Username",
     "invalid-email": "Invalid Email",
     "invalid-fullname": "Invalid Fullname",
+    "fullname-required": "Full Name is Required",
     "invalid-location": "Invalid Location",
     "invalid-birthday": "Invalid Birthday",
     "invalid-title": "Invalid title",
