@@ -1786,7 +1786,7 @@ describe('User', () => {
 				'password-confirm': '123456',
 				email: '<script>alert("ok")<script>reject@me.com',
 				gdpr_consent: true,
-				fullname: 'rejustme',
+				fullname: 'rejuctme',
 			});
 			assert.equal(body, '[[error:username-taken]]');
 		});
@@ -1804,7 +1804,7 @@ describe('User', () => {
 		});
 
 		// new check added
-		it('should fail to add user to queue if fullname is not properly entered or left blank', async () => {
+		it('should fail to add user to queue if fullname is not entered', async () => {
 			const { body } = await helpers.registerUser({
 				username: 'rejectmenew',
 				password: '123456',
