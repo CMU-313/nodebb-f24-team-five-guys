@@ -173,11 +173,9 @@ module.exports = function (User) {
 	}
 
 	function isFullnameValid(data) {
-		if (data.fullname && (validator.isURL(data.fullname) || data.fullname.length > 255 || data.fullname.trim().length === 0)) {
+		if (data.fullname && (validator.isURL(data.fullname) || data.fullname.length > 255 ||
+		data.fullname.trim().length === 0)) {
 			throw new Error('[[error:invalid-fullname]]');
-		}
-		if (!data.fullname) {
-			throw new Error('[[error:fullname-required]]');
 		}
 	}
 

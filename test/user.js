@@ -1815,6 +1815,45 @@ describe('User', () => {
 			assert.equal(body, '[[error:fullname-required]]');
 		});
 
+		// new check added
+		it('should fail to add user to queue if fullname is blank spaces', async () => {
+			const { body } = await helpers.registerUser({
+				username: 'rejectmenew',
+				password: '123456',
+				'password-confirm': '123456',
+				email: '<script>alert("ok")<script>reject@me.com',
+				gdpr_consent: true,
+				fullname: '   ',
+			});
+			assert.equal(body, '[[error:invalid-fullname]]');
+		});
+
+		// new check added
+		it('should fail to add user to queue if fullname is URL', async () => {
+			const { body } = await helpers.registerUser({
+				username: 'rejectmenew',
+				password: '123456',
+				'password-confirm': '123456',
+				email: '<script>alert("ok")<script>reject@me.com',
+				gdpr_consent: true,
+				fullname: 'https://www.linkedin.com',
+			});
+			assert.equal(body, '[[error:invalid-fullname]]');
+		});
+
+		// new check added
+		it('should fail to add user to queue if the length of the fullname exceeds 255', async () => {
+			const { body } = await helpers.registerUser({
+				username: 'rejectmenew',
+				password: '123456',
+				'password-confirm': '123456',
+				email: '<script>alert("ok")<script>reject@me.com',
+				gdpr_consent: true,
+				fullname: 'As with the first sprint, every member of your team must contribute to the implementation. One way we will evaluate this is that each team member must have at least one commit as a part of the solution. Failure to do so will result in a significant penalty to your grade.',
+			});
+			assert.equal(body, '[[error:invalid-fullname]]');
+		});
+
 		it('should reject user registration', async () => {
 			await socketUser.rejectRegistration({ uid: adminUid }, { username: 'rejectme' });
 			const users = await User.getRegistrationQueue(0, -1);
