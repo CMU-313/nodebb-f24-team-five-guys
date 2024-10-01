@@ -280,7 +280,7 @@ module.exports = function (User) {
 	async function updateFullname(uid, newFullname) {
 		const fullname = await db.getObjectField(`user:${uid}`, 'fullname');
 		if (!newFullname) {
-			throw new Error('[[error:fullname-required');
+			throw new Error('[[error:fullname-required]]');
 		} // covers trim already
 		await updateUidMapping('fullname', uid, newFullname, fullname);
 		if (newFullname !== fullname) {

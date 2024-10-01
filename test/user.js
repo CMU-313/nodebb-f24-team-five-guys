@@ -767,6 +767,42 @@ describe('User', () => {
 				const confirmSent = await User.email.isValidationPending(uid, 'updatedemail@me.com');
 				assert.strictEqual(confirmSent, true);
 			});
+
+			it('should not allow updating fullname to an empty string', async () => {
+				try {
+					await apiUser.update({ uid: uid }, { uid: uid, fullname: '' });
+					assert(false);
+				} catch (err) {
+					assert.strictEqual(err.message, '[[error:fullname-required]]');
+				}
+			});
+
+			it('should not allow updating fullname to a string with only whitespace', async () => {
+				try {
+					await apiUser.update({ uid: uid }, { uid: uid, fullname: '     ' });
+					assert(false);
+				} catch (err) {
+					assert.strictEqual(err.message, '[[error:fullname-required]]');
+				}
+			});
+
+			it('should not allow fullname to be greater than 255 characters', async () => {
+				try {
+					await apiUser.update({ uid: uid }, { uid: uid, fullname: 'We want you to connect this projects experience with your previous experience with collaborative development. Your previous experience may be from an academic or non-academic setting, such as internships, hackathons, or personal projects. Adding characters so that the limit passes 255 characters so this as full name does not work' });
+					assert(false);
+				} catch (err) {
+					assert.strictEqual(err.message, '[[error:invalid-fullname]]');
+				}
+			});
+
+			it('should not allow updating fullname to a url', async () => {
+				try {
+					await apiUser.update({ uid: uid }, { uid: uid, fullname: 'https://www.linkedin.com' });
+					assert(false);
+				} catch (err) {
+					assert.strictEqual(err.message, '[[error:invalid-fullname]]');
+				}
+			});
 		});
 
 		it('should change a user\'s password', async () => {
