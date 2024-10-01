@@ -173,8 +173,7 @@ module.exports = function (User) {
 	}
 
 	function isFullnameValid(data) {
-		if (data.fullname && (validator.isURL(data.fullname) || data.fullname.length > 255 ||
-		data.fullname.trim().length === 0)) {
+		if (data.fullname && (validator.isURL(data.fullname) || data.fullname.length > 255)) {
 			throw new Error('[[error:invalid-fullname]]');
 		}
 	}
@@ -280,9 +279,6 @@ module.exports = function (User) {
 
 	async function updateFullname(uid, newFullname) {
 		const fullname = await db.getObjectField(`user:${uid}`, 'fullname');
-		if (!newFullname) {
-			throw new Error('[[error:fullname-required]]');
-		}
 		await updateUidMapping('fullname', uid, newFullname, fullname);
 		if (newFullname !== fullname) {
 			if (fullname) {
