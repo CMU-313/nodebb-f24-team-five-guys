@@ -12,7 +12,7 @@ define('forum/category', [
 	'api',
 ], function (infinitescroll, share, navigator, topicList, sort, categorySelector, hooks, alerts, api) {
 	const Category = {};
-	let userFilter = '';
+	const userFilter = '';
 
 	$(window).on('action:ajaxify.start', function (ev, data) {
 		if (!String(data.url).startsWith('category/')) {
@@ -50,7 +50,7 @@ define('forum/category', [
 				ajaxify.go('/category/' + category.cid);
 			},
 		});
-		
+
 		addUserFilterInput();
 
 		hooks.fire('action:topics.loaded', { topics: ajaxify.data.topics });
@@ -168,24 +168,9 @@ define('forum/category', [
 
 		function applyFilter(userFilter) {
 			const currentUrl = ajaxify.currentPage;
-			const newUrl = userFilter 
-				? `${currentUrl}?userFilter=${encodeURIComponent(userFilter)}`
-				: currentUrl.split('?')[0]; // Remove query parameters if no filter
+			const newUrl = userFilter ? `${currentUrl}?userFilter=${encodeURIComponent(userFilter)}` : currentUrl.split('?')[0]; // Remove query parameters if no filter
 			ajaxify.go(newUrl);
 		}
-	}
-	function reloadTopics() {
-		$('[component="category/topic"]').remove();
-		loadTopicsAfter(0, 'bottom', function (data, done) {
-			console.log('Received topics:', data.topics.length); // Debug log
-			if (data.topics.length === 0) {
-				$('[component="category"]').append('<div class="alert alert-info" id="category-no-topics">No topics found.</div>');
-			} else {
-				$('#category-no-topics').remove();
-			}
-			hooks.fire('action:topics.loaded', { topics: data.topics });
-			done();
-		});
 	}
 
 	function loadTopicsAfter(after, direction, callback) {
@@ -193,7 +178,7 @@ define('forum/category', [
 
 		hooks.fire('action:topics.loading');
 		const params = utils.params();
-		params.userFilter = userFilter;  // Add this line to include the user filter
+		params.userFilter = userFilter;// Add this line to include the user filter
 
 		// Clear existing topics when filter changes
 		if (direction === 'bottom') {
@@ -210,8 +195,5 @@ define('forum/category', [
 			callback(data, done);
 		});
 	}
-
 	return Category;
-
-	
 });
