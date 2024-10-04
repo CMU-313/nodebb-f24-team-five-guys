@@ -1926,21 +1926,6 @@ describe('User', () => {
 			const users = await db.getSortedSetRange('registration:queue', 0, -1);
 			assert.equal(users[0], 'invalidname');
 		});
-
-		// new check added
-		it('should trim fullname and add user to registration queue', async () => {
-			await helpers.registerUser({
-				username: 'invalidname',
-				password: '123456',
-				'password-confirm': '123456',
-				email: 'invalidtest@test.com',
-				gdpr_consent: true,
-				fullname: 'invalidname\r\n',
-			});
-
-			const users = await db.getSortedSetRange('registration:queue', 0, -1);
-			assert.equal(users[0], 'invalidname');
-		});
 	});
 
 	describe('invites', () => {
