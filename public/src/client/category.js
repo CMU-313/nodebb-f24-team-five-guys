@@ -50,7 +50,7 @@ define('forum/category', [
 				ajaxify.go('/category/' + category.cid);
 			},
 		});
-
+		
 		addUserFilterInput();
 
 		hooks.fire('action:topics.loaded', { topics: ajaxify.data.topics });
@@ -131,32 +131,48 @@ define('forum/category', [
 		filterContainer.append(filterInput);
 		$('[component="category"]').prepend(filterContainer);
 
-		// filterInput.on('input', function () {
-		// 	userFilter = $(this).val().trim();
-		// 	loadTopicsAfter(0, 'bottom', function (data, done) {
-		// 		hooks.fire('action:topics.loaded', { topics: data.topics });
-		// 		done();
-		// 	});
-		// });
-
-		// filterInput.on('input', function () {
-		// 	userFilter = $(this).val().trim();
-		// 	console.log('Client-side userFilter:', userFilter); // Debug log
-		// 	loadTopicsAfter(0, 'bottom', function (data, done) {
-		// 		console.log('Received topics:', data.topics.length); // Debug log
-		// 		hooks.fire('action:topics.loaded', { topics: data.topics });
-		// 		done();
-		// 	});
-		// });
 		let filterTimeout;
+		let currentFilter = '';
+
 		filterInput.on('input', function () {
 			clearTimeout(filterTimeout);
 			filterTimeout = setTimeout(() => {
-				userFilter = $(this).val().trim();
+				const userFilter = $(this).val().trim();
 				console.log('Client-side userFilter:', userFilter); // Debug log
-				reloadTopics();
-			}, 300); // 300ms delay
+
+				// Only trigger the filter if the input has changed
+				if (userFilter !== currentFilter) {
+					currentFilter = userFilter;
+					applyFilter(userFilter);
+				}
+			}, 500); // 500ms delay before applying the filter
 		});
+
+		// Add a clear button
+		const clearButton = $('<button class="btn btn-sm btn-outline-secondary ml-2">Clear</button>');
+		filterContainer.append(clearButton);
+
+		clearButton.on('click', function () {
+			filterInput.val('');
+			currentFilter = '';
+			applyFilter('');
+		});
+
+		// Initialize the filter with the current URL parameter, if any
+		const urlParams = new URLSearchParams(window.location.search);
+		const initialFilter = urlParams.get('userFilter');
+		if (initialFilter) {
+			filterInput.val(initialFilter);
+			currentFilter = initialFilter;
+		}
+
+		function applyFilter(userFilter) {
+			const currentUrl = ajaxify.currentPage;
+			const newUrl = userFilter 
+				? `${currentUrl}?userFilter=${encodeURIComponent(userFilter)}`
+				: currentUrl.split('?')[0]; // Remove query parameters if no filter
+			ajaxify.go(newUrl);
+		}
 	}
 	function reloadTopics() {
 		$('[component="category/topic"]').remove();
