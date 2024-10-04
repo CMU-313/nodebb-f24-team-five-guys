@@ -12,6 +12,8 @@
     "password": "Password",
     "password-placeholder": "Enter Password",
     "confirm-password": "Confirm Password",
+    "fullname": "Full Name",
+    "fullname-placeholder": "Enter Full Name",
     "confirm-password-placeholder": "Confirm Password",
     "register-now-button": "Register Now",
     "alternative-registration": "Alternative Registration",

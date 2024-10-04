@@ -106,6 +106,7 @@ describe('authentication', () => {
 				'password-confirm': 'adminpwd',
 				userLang: 'it',
 				gdpr_consent: true,
+				fullname: 'adminfn',
 			},
 			headers: {
 				'x-csrf-token': csrf_token,
@@ -384,6 +385,7 @@ describe('authentication', () => {
 			username: 'anotheruser',
 			password: 'anotherpwd',
 			gdpr_consent: 1,
+			fullname: 'anotheruser',
 		});
 		meta.config.registrationApprovalType = 'normal';
 		assert.equal(response.statusCode, 200);
@@ -393,7 +395,7 @@ describe('authentication', () => {
 
 	it('should be able to login with email', async () => {
 		const email = 'ginger@nodebb.org';
-		const uid = await user.create({ username: 'ginger', password: '123456', email });
+		const uid = await user.create({ username: 'ginger', password: '123456', email, fullname: 'ginger' });
 		await user.setUserField(uid, 'email', email);
 		await user.email.confirmByUid(uid);
 		const { response } = await helpers.loginUser('ginger@nodebb.org', '123456');

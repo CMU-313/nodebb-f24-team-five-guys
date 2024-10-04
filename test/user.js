@@ -97,7 +97,7 @@ describe('User', () => {
 		});
 
 		it('should have a valid email, if using an email', (done) => {
-			User.create({ username: userData.username, password: userData.password, email: 'fakeMail' }, (err) => {
+			User.create({ username: userData.username, fullname: userData.fullname, password: userData.password, email: 'fakeMail' }, (err) => {
 				assert(err);
 				assert.equal(err.message, '[[error:invalid-email]]');
 				done();
@@ -766,6 +766,46 @@ describe('User', () => {
 			it('should also generate an email confirmation code for the changed email', async () => {
 				const confirmSent = await User.email.isValidationPending(uid, 'updatedemail@me.com');
 				assert.strictEqual(confirmSent, true);
+			});
+
+			// new check added
+			it('should not allow updating fullname to an empty string', async () => {
+				try {
+					await apiUser.update({ uid: uid }, { uid: uid, fullname: '' });
+					assert(false);
+				} catch (err) {
+					assert.strictEqual(err.message, '[[error:fullname-required]]');
+				}
+			});
+
+			// new check added
+			it('should not allow updating fullname to a string with only whitespace', async () => {
+				try {
+					await apiUser.update({ uid: uid }, { uid: uid, fullname: '     ' });
+					assert(false);
+				} catch (err) {
+					assert.strictEqual(err.message, '[[error:fullname-required]]');
+				}
+			});
+
+			// new check added
+			it('should not allow fullname to be greater than 255 characters', async () => {
+				try {
+					await apiUser.update({ uid: uid }, { uid: uid, fullname: 'We want you to connect this projects experience with your previous experience with collaborative development. Your previous experience may be from an academic or non-academic setting, such as internships, hackathons, or personal projects. Adding characters so that the limit passes 255 characters so this as full name does not work' });
+					assert(false);
+				} catch (err) {
+					assert.strictEqual(err.message, '[[error:invalid-fullname]]');
+				}
+			});
+
+			// new check added
+			it('should not allow updating fullname to a URL', async () => {
+				try {
+					await apiUser.update({ uid: uid }, { uid: uid, fullname: 'https://www.linkedin.com' });
+					assert(false);
+				} catch (err) {
+					assert.strictEqual(err.message, '[[error:invalid-fullname]]');
+				}
 			});
 		});
 
@@ -1771,6 +1811,7 @@ describe('User', () => {
 				'password-confirm': '123456',
 				email: '<script>alert("ok")<script>reject@me.com',
 				gdpr_consent: true,
+				fullname: 'rejectme',
 			});
 			const { jar } = await helpers.loginUser('admin', '123456');
 			const { body: { users } } = await request.get(`${nconf.get('url')}/api/admin/manage/registration`, { jar });
@@ -1785,6 +1826,7 @@ describe('User', () => {
 				'password-confirm': '123456',
 				email: '<script>alert("ok")<script>reject@me.com',
 				gdpr_consent: true,
+				fullname: 'rejuctme',
 			});
 			assert.equal(body, '[[error:username-taken]]');
 		});
@@ -1796,8 +1838,60 @@ describe('User', () => {
 				'password-confirm': '123456',
 				email: '<script>alert("ok")<script>reject@me.com',
 				gdpr_consent: true,
+				fullname: 'rejustmenew',
 			});
 			assert.equal(body, '[[error:email-taken]]');
+		});
+
+		// new check added
+		it('should fail to add user to queue if fullname is not entered', async () => {
+			const { body } = await helpers.registerUser({
+				username: 'rejectmenew',
+				password: '123456',
+				'password-confirm': '123456',
+				email: '<script>alert("ok")<script>reject@me.com',
+				gdpr_consent: true,
+			});
+			assert.equal(body, '[[error:fullname-required]]');
+		});
+
+		// new check added
+		it('should fail to add user to queue if fullname is blank spaces', async () => {
+			const { body } = await helpers.registerUser({
+				username: 'rejectmenew',
+				password: '123456',
+				'password-confirm': '123456',
+				email: '<script>alert("ok")<script>reject@me.com',
+				gdpr_consent: true,
+				fullname: '   ',
+			});
+			assert.equal(body, '[[error:invalid-fullname]]');
+		});
+
+		// new check added
+		it('should fail to add user to queue if fullname is URL', async () => {
+			const { body } = await helpers.registerUser({
+				username: 'rejectmenew',
+				password: '123456',
+				'password-confirm': '123456',
+				email: '<script>alert("ok")<script>reject@me.com',
+				gdpr_consent: true,
+				fullname: 'https://www.linkedin.com',
+			});
+			assert.equal(body, '[[error:invalid-fullname]]');
+		});
+
+		// new check added
+		it('should fail to add user to queue if the length of the fullname exceeds 255', async () => {
+			const { body } = await helpers.registerUser({
+				username: 'rejectmenew',
+				password: '123456',
+				'password-confirm': '123456',
+				email: '<script>alert("ok")<script>reject@me.com',
+				gdpr_consent: true,
+				fullname: 'As with the first sprint, every member of your team must contribute to the implementation. One way we will evaluate this is that each team member must have at least one commit as a part of the solution. Failure to do so will result in a significant penalty to your grade.',
+			});
+			assert.equal(body, '[[error:invalid-fullname]]');
 		});
 
 		it('should reject user registration', async () => {
@@ -1813,6 +1907,7 @@ describe('User', () => {
 				'password-confirm': '123456',
 				email: 'accept@me.com',
 				gdpr_consent: true,
+				fullname: 'acceptme',
 			});
 
 			const uid = await socketUser.acceptRegistration({ uid: adminUid }, { username: 'acceptme' });
@@ -1829,6 +1924,7 @@ describe('User', () => {
 				'password-confirm': '123456',
 				email: 'invalidtest@test.com',
 				gdpr_consent: true,
+				fullname: 'invalidname',
 			});
 
 			const users = await db.getSortedSetRange('registration:queue', 0, -1);
@@ -2102,6 +2198,7 @@ describe('User', () => {
 					email: email,
 					gdpr_consent: true,
 					token: token,
+					fullname: 'invite5',
 				});
 
 				const memberships = await groups.isMemberOfGroups(body.uid, groupsToJoin);

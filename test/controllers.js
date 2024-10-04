@@ -244,6 +244,7 @@ describe('Controllers', () => {
 				password: '123456',
 				'password-confirm': '123456',
 				email: 'test@me.com',
+				fullname: 'interstitial',
 			},
 			jar,
 			headers: {
@@ -279,6 +280,7 @@ describe('Controllers', () => {
 				jar = (await helpers.registerUser({
 					username: utils.generateUUID().slice(0, 10),
 					password: utils.generateUUID(),
+					fullname: utils.generateUUID().slice(0, 10),
 				})).jar;
 				token = await helpers.getCsrfToken(jar);
 
@@ -497,6 +499,7 @@ describe('Controllers', () => {
 					jar = (await helpers.registerUser({
 						username,
 						password: utils.generateUUID(),
+						fullname: utils.generateUUID().slice(0, 10),
 					})).jar;
 					token = await helpers.getCsrfToken(jar);
 				});
@@ -594,6 +597,7 @@ describe('Controllers', () => {
 				jar = (await helpers.registerUser({
 					username: utils.generateUUID().slice(0, 10),
 					password: utils.generateUUID(),
+					fullname: utils.generateUUID().slice(0, 10),
 				})).jar;
 				token = await helpers.getCsrfToken(jar);
 			});
@@ -625,6 +629,7 @@ describe('Controllers', () => {
 				jar = (await helpers.registerUser({
 					username: utils.generateUUID().slice(0, 10),
 					password: utils.generateUUID(),
+					fullname: utils.generateUUID().slice(0, 10),
 				})).jar;
 				token = await helpers.getCsrfToken(jar);
 			});
