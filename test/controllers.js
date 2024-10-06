@@ -118,40 +118,47 @@ describe('Controllers', () => {
 		assert.strictEqual(body.loggedIn, false);
 	});
 
-	describe('Sorting users by most followers', () => {
-		let user1; let user2; let
-			user3;
-		const jar = request.jar();
-		before(async () => {
-			// Create users
-			user1 = await user.create({ username: 'user1', password: 'password', email: 'user1@example.com' });
-			user2 = await user.create({ username: 'user2', password: 'password', email: 'user2@example.com' });
-			user3 = await user.create({ username: 'user3', password: 'password', email: 'user3@example.com' });
-			// Add followers
-			await api.users.follow(user1.uid, user2.uid); // user2 follows user1
-			await api.users.follow(user3.uid, user1.uid); // user3 follows user1
-			await api.users.follow(user1.uid, user3.uid); // user1 follows user3
-		});
-		it('should sort users by most followers', async () => {
-			const { response, body } = await request
-				.get(`${nconf.get('url')}/api/users?section=sort-followers`, { jar })
-				.query({ page: 1 })
-				.expect(200);
-			assert.equal(response.statusCode, 200);
-			assert.equal(body.users[0].username, 'user1');
-			assert.equal(body.users[0].followerCount, 2); // user1 has 2 followers
-			assert.equal(body.users[1].username, 'user3');
-			assert.equal(body.users[1].followerCount, 1); // user3 has 1 follower
-			assert.equal(body.users[2].username, 'user2');
-			assert.equal(body.users[2].followerCount, 0); // user2 has no followers
-		});
-		after(async () => {
-			// Cleanup users and followers
-			await db.deleteUser(user1.uid);
-			await db.deleteUser(user2.uid);
-			await db.deleteUser(user3.uid);
-		});
-	});
+	it('should load sorted followers page', async () => {
+        // const jar = request.jar();
+		let user1 = await user.create({ username: 'user1'});
+		let user2 = await user.create({ username: 'user2'});
+		let user3 = await user.create({ username: 'user3'});
+		let user4 = await user.create({ username: 'user4'});
+		let user5 = await user.create({ username: 'user5'});
+		let user6 = await user.create({ username: 'user6'});
+		await user.follow(user2, user1);
+		await user.follow(user3, user1);
+		await user.follow(user4, user1);
+		await user.follow(user5, user1);
+		await user.follow(user6, user1);
+
+		await user.follow(user1, user6);
+		await user.follow(user3, user6);
+		await user.follow(user4, user6);
+		await user.follow(user5, user6);
+
+		await user.follow(user1, user3);
+		await user.follow(user2, user3);
+		await user.follow(user4, user3);
+
+		const { response, body } = await request.get(`${nconf.get('url')}/api/users?section=sort-followers`)
+
+
+		assert.equal(response.statusCode, 200);
+		assert(body);
+		assert(body.users);
+		assert(body.users[0].username === "user1");
+		assert(body.users[1].username === "user6");
+		assert(body.users[2].username === "user3");
+
+		user.delete(user1);
+		user.delete(user2);
+		user.delete(user3);
+		user.delete(user4);
+		user.delete(user5);
+		user.delete(user6);
+
+    });
 
 	describe('homepage', () => {
 		function hookMethod(hookData) {
