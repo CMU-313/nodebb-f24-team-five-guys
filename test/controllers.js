@@ -119,13 +119,12 @@ describe('Controllers', () => {
 	});
 
 	it('should load sorted followers page', async () => {
-        // const jar = request.jar();
-		let user1 = await user.create({ username: 'user1'});
-		let user2 = await user.create({ username: 'user2'});
-		let user3 = await user.create({ username: 'user3'});
-		let user4 = await user.create({ username: 'user4'});
-		let user5 = await user.create({ username: 'user5'});
-		let user6 = await user.create({ username: 'user6'});
+		const user1 = await user.create({ username: 'user1' });
+		const user2 = await user.create({ username: 'user2' });
+		const user3 = await user.create({ username: 'user3' });
+		const user4 = await user.create({ username: 'user4' });
+		const user5 = await user.create({ username: 'user5' });
+		const user6 = await user.create({ username: 'user6' });
 		await user.follow(user2, user1);
 		await user.follow(user3, user1);
 		await user.follow(user4, user1);
@@ -141,24 +140,22 @@ describe('Controllers', () => {
 		await user.follow(user2, user3);
 		await user.follow(user4, user3);
 
-		const { response, body } = await request.get(`${nconf.get('url')}/api/users?section=sort-followers`)
+		const { response, body } = await request.get(`${nconf.get('url')}/api/users?section=sort-followers`);
 
 
 		assert.equal(response.statusCode, 200);
 		assert(body);
 		assert(body.users);
-		assert(body.users[0].username === "user1");
-		assert(body.users[1].username === "user6");
-		assert(body.users[2].username === "user3");
-
+		assert(body.users[0].username === 'user1');
+		assert(body.users[1].username === 'user6');
+		assert(body.users[2].username === 'user3');
 		user.delete(user1);
 		user.delete(user2);
 		user.delete(user3);
 		user.delete(user4);
 		user.delete(user5);
 		user.delete(user6);
-
-    });
+	});
 
 	describe('homepage', () => {
 		function hookMethod(hookData) {
