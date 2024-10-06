@@ -21,7 +21,7 @@ usersController.index = async function (req, res, next) {
 		'sort-reputation': usersController.getUsersSortedByReputation,
 		banned: usersController.getBannedUsers,
 		flagged: usersController.getFlaggedUsers,
-		// 'sort-followers': usersController.getUsersSortedByFollowers,
+		'sort-followers': usersController.getUsersSortedByFollowers,
 	};
 
 	if (req.query.query) {
@@ -154,66 +154,49 @@ usersController.getUsers = async function (set, uid, query) {
 };
 
 usersController.getUsersAndCount = async function (set, uid, start, stop) {
-    async function getCount() {
-        // Get the count of users in the specified set
-        if (set === 'users:online') {
-            return await db.sortedSetCount('users:online', Date.now() - 86400000, '+inf');
-        } else if (set === 'users:banned' || set === 'users:flags') {
-            return await db.sortedSetCard(set);
-        }
-        // Default: return the total number of users
-        return await db.getObjectField('global', 'userCount');
-    }
-    async function getUsers() {
-        // Fetch users currently online
-        if (set === 'users:online') {
-            const count = parseInt(stop, 10) === -1 ? stop : stop - start + 1;
-            const data = await db.getSortedSetRevRangeByScoreWithScores(set, start, count, '+inf', Date.now() - 86400000);
-            const uids = data.map(d => d.value);
-            const scores = data.map(d => d.score);
-            const [userStatus, userData] = await Promise.all([
-                db.getObjectsFields(uids.map(uid => `user:${uid}`), ['status']),
-                user.getUsers(uids, uid),
-            ]);
-            userData.forEach((user, i) => {
-                if (user) {
-                    user.lastonline = scores[i];
-                    user.lastonlineISO = utils.toISOString(user.lastonline);
-                    user.userStatus = userStatus[i].status || 'online';
-                }
-            });
-            return userData;
-        } else if (set === 'users:followerCount') {
-            // Fetch users based on their follower counts
-            const uids = await db.getSortedSetRevRange('users:followerCount', start, stop);
-            const users = await user.getUsers(uids, uid);
-            // Fetch follower count for each user and assign it to the followerCount field
-            const followerCounts = await Promise.all(
-                uids.map(async (userId) => {
-                    // Fetch the follower count for the user
-                    const count = await db.sortedSetCard(`followerCount:${userId}`);
-                    return count || 0; // Return 0 if no followers
-                })
-            );
-            // Add follower count to each user object
-            users.forEach((user, index) => {
-                user.followerCount = followerCounts[index] || 0;
-            });
-            return users;
-        }
-        // Fetch users based on other sets
-        return await user.getUsersFromSet(set, uid, start, stop);
-    }
-    // Get users and their count in parallel
-    const [usersData, count] = await Promise.all([
-        getUsers(),
-        getCount(),
-    ]);
-    // Return user data and count
-    return {
-        users: usersData.filter(user => user && parseInt(user.uid, 10)),
-        count: count,
-    };
+	async function getCount() {
+		// Get the count of users in the specified set
+		if (set === 'users:online') {
+			return await db.sortedSetCount('users:online', Date.now() - 86400000, '+inf');
+		} else if (set === 'users:banned' || set === 'users:flags') {
+			return await db.sortedSetCard(set);
+		}
+		// Default: return the total number of users
+		return await db.getObjectField('global', 'userCount');
+	}
+	async function getUsers() {
+		// Fetch users currently online
+		if (set === 'users:online') {
+			const count = parseInt(stop, 10) === -1 ? stop : stop - start + 1;
+			const data = await db.getSortedSetRevRangeByScoreWithScores(set, start, count, '+inf', Date.now() - 86400000);
+			const uids = data.map(d => d.value);
+			const scores = data.map(d => d.score);
+			const [userStatus, userData] = await Promise.all([
+				db.getObjectsFields(uids.map(uid => `user:${uid}`), ['status']),
+				user.getUsers(uids, uid),
+			]);
+			userData.forEach((user, i) => {
+				if (user) {
+					user.lastonline = scores[i];
+					user.lastonlineISO = utils.toISOString(user.lastonline);
+					user.userStatus = userStatus[i].status || 'online';
+				}
+			});
+			return userData;
+		}
+		// Fetch users based on other sets
+		return await user.getUsersFromSet(set, uid, start, stop);
+	}
+	// Get users and their count in parallel
+	const [usersData, count] = await Promise.all([
+		getUsers(),
+		getCount(),
+	]);
+	// Return user data and count
+	return {
+		users: usersData.filter(user => user && parseInt(user.uid, 10)),
+		count: count,
+	};
 };
 
 async function render(req, res, data) {
