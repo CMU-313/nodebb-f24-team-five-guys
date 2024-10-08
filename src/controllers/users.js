@@ -21,6 +21,7 @@ usersController.index = async function (req, res, next) {
 		'sort-reputation': usersController.getUsersSortedByReputation,
 		banned: usersController.getBannedUsers,
 		flagged: usersController.getFlaggedUsers,
+		'sort-followers': usersController.getUsersSortedByFollowers,
 	};
 
 	if (req.query.query) {
@@ -76,6 +77,10 @@ usersController.getUsersSortedByReputation = async function (req, res, next) {
 	await usersController.renderUsersPage('users:reputation', req, res);
 };
 
+usersController.getUsersSortedByFollowers = async function (req, res) {
+	await usersController.renderUsersPage('users:followerCount', req, res);
+};
+
 usersController.getUsersSortedByJoinDate = async function (req, res) {
 	await usersController.renderUsersPage('users:joindate', req, res);
 };
@@ -109,6 +114,7 @@ usersController.getUsers = async function (set, uid, query) {
 		'users:online': { title: '[[pages:users/online]]', crumb: '[[global:online]]' },
 		'users:banned': { title: '[[pages:users/banned]]', crumb: '[[user:banned]]' },
 		'users:flags': { title: '[[pages:users/most-flags]]', crumb: '[[users:most-flags]]' },
+		'users:followerCount': { title: '[[pages:users/sort-followers]]', crumb: '[[users:sort-followers]]' },
 	};
 
 	if (!setToData[set]) {
@@ -149,15 +155,23 @@ usersController.getUsers = async function (set, uid, query) {
 
 usersController.getUsersAndCount = async function (set, uid, start, stop) {
 	async function getCount() {
-		if (set === 'users:online') {
-			return await db.sortedSetCount('users:online', Date.now() - 86400000, '+inf');
-		} else if (set === 'users:banned' || set === 'users:flags') {
-			return await db.sortedSetCard(set);
-		}
+		// Get the total count of users
 		return await db.getObjectField('global', 'userCount');
 	}
+
 	async function getUsers() {
-		if (set === 'users:online') {
+		if (set === 'users:followerCount') {
+			// Fetch all users and sort them by follower count, including users with 0 followers
+			const userIds = await db.getSortedSetRange('users:joindate', 0, -1); // Get all users by join date
+			const usersData = await user.getUsers(userIds, uid);
+
+			// Sort users by follower count (descending)
+			usersData.sort((a, b) => (b.followerCount || 0) - (a.followerCount || 0));
+
+			// Return a slice of users based on the pagination range
+			return usersData.slice(start, stop + 1);
+		} else if (set === 'users:online') {
+			// Fetch online users only
 			const count = parseInt(stop, 10) === -1 ? stop : stop - start + 1;
 			const data = await db.getSortedSetRevRangeByScoreWithScores(set, start, count, '+inf', Date.now() - 86400000);
 			const uids = data.map(d => d.value);
@@ -166,7 +180,6 @@ usersController.getUsersAndCount = async function (set, uid, start, stop) {
 				db.getObjectsFields(uids.map(uid => `user:${uid}`), ['status']),
 				user.getUsers(uids, uid),
 			]);
-
 			userData.forEach((user, i) => {
 				if (user) {
 					user.lastonline = scores[i];
@@ -176,17 +189,23 @@ usersController.getUsersAndCount = async function (set, uid, start, stop) {
 			});
 			return userData;
 		}
+		// Fetch users based on other sets
 		return await user.getUsersFromSet(set, uid, start, stop);
 	}
+
+	// Get users and their count in parallel
 	const [usersData, count] = await Promise.all([
 		getUsers(),
 		getCount(),
 	]);
+
+	// Return user data and count
 	return {
 		users: usersData.filter(user => user && parseInt(user.uid, 10)),
 		count: count,
 	};
 };
+
 
 async function render(req, res, data) {
 	const { registrationType } = meta.config;

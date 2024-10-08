@@ -118,6 +118,69 @@ describe('Controllers', () => {
 		assert.strictEqual(body.loggedIn, false);
 	});
 
+	describe('sorted followers page', () => {
+		let user1;
+		let user2;
+		let user3;
+		let user4;
+		let user5;
+		let user6;
+
+		before(async () => {
+			user1 = await user.create({ username: 'user1' });
+			user2 = await user.create({ username: 'user2' });
+			user3 = await user.create({ username: 'user3' });
+			user4 = await user.create({ username: 'user4' });
+			user5 = await user.create({ username: 'user5' });
+			user6 = await user.create({ username: 'user6' });
+		});
+
+		it('should load sorted followers page', async () => {
+			await user.follow(user2, user1);
+			await user.follow(user3, user1);
+			await user.follow(user4, user1);
+			await user.follow(user5, user1);
+			await user.follow(user6, user1);
+
+			await user.follow(user1, user6);
+			await user.follow(user3, user6);
+			await user.follow(user4, user6);
+			await user.follow(user5, user6);
+
+			await user.follow(user1, user3);
+			await user.follow(user2, user3);
+			await user.follow(user4, user3);
+
+			const { response, body } = await request.get(`${nconf.get('url')}/api/users?section=sort-followers`);
+
+			assert.equal(response.statusCode, 200);
+			assert(body);
+			assert(body.users);
+			assert(body.users[0].username === 'user1');
+			assert(body.users[1].username === 'user6');
+			assert(body.users[2].username === 'user3');
+			assert.equal(body.users.length, 8);
+		});
+
+		it('should update sorted order when users unfollow', async () => {
+			// Check initial order
+			let { response, body } = await request.get(`${nconf.get('url')}/api/users?section=sort-followers`);
+			assert.equal(response.statusCode, 200);
+			assert(body.users[0].username === 'user1');
+			assert(body.users[1].username === 'user6');
+
+			// Unfollow user1
+			await user.unfollow(user2, user1);
+			await user.unfollow(user3, user1);
+
+			// Check updated order
+			({ response, body } = await request.get(`${nconf.get('url')}/api/users?section=sort-followers`));
+			assert.equal(response.statusCode, 200);
+			assert(body.users[0].username === 'user6', 'user6 should now be first');
+			assert(body.users[1].username === 'user1', 'user1 should now be second');
+		});
+	});
+
 	describe('homepage', () => {
 		function hookMethod(hookData) {
 			assert(hookData.req);

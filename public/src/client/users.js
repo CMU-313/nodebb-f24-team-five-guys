@@ -76,6 +76,8 @@ define('forum/users', [
 			sortBy = 'reputation';
 		} else if (activeSection === 'users') {
 			sortBy = 'joindate';
+		} else if (activeSection === 'sort-followers') {
+			sortBy = 'followerCount';
 		}
 		return sortBy;
 	}
