@@ -179,7 +179,6 @@ describe('Controllers', () => {
 			assert(body.users[0].username === 'user6', 'user6 should now be first');
 			assert(body.users[1].username === 'user1', 'user1 should now be second');
 		});
-
 	});
 
 	describe('homepage', () => {
