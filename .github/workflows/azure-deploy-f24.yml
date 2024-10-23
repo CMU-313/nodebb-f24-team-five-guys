@@ -52,9 +52,26 @@ jobs:
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_BFAB97B1AB1441ACA7C63280F91AD3F3 }}
           package: .
-      - name: Run DeepScan
+      # - name: Run DeepScan
+      #   env:
+      #     DEEPSCAN_API_TOKEN: ${{ secrets.dsv_lazs4vlvm7nunwixe43pu5rukgwiktndq72b }}
+      #   run: |
+      #     npm install -g deepscan
+      #     deepscan analyze --token $dsv_lazs4vlvm7nunwixe43pu5rukgwiktndq72b --project-path .
+      # Trigger DeepScan API
+      - name: Run DeepScan API Analysis
         env:
           DEEPSCAN_API_TOKEN: ${{ secrets.dsv_lazs4vlvm7nunwixe43pu5rukgwiktndq72b }}
         run: |
-          npm install -g deepscan
-          deepscan analyze --token $dsv_lazs4vlvm7nunwixe43pu5rukgwiktndq72b --project-path .
+          curl -X POST \
+            -H "Authorization: Bearer $dsv_lazs4vlvm7nunwixe43pu5rukgwiktndq72b" \
+            -H "Content-Type: application/json" \
+            -d '{"projectPath": ".", "branch": "main"}' \
+            https://deepscan.io/api/v1/analyze
+      - name: Check DeepScan Results
+        env:
+          DEEPSCAN_API_TOKEN: ${{ secrets.dsv_lazs4vlvm7nunwixe43pu5rukgwiktndq72b }}
+        run: |
+          curl -X GET \
+            -H "Authorization: Bearer $dsv_lazs4vlvm7nunwixe43pu5rukgwiktndq72b" \
+            https://deepscan.io/api/v1/projects/28177/results
