@@ -52,3 +52,9 @@ jobs:
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_BFAB97B1AB1441ACA7C63280F91AD3F3 }}
           package: .
+      - name: Run DeepScan
+        env:
+          DEEPSCAN_API_TOKEN: ${{ secrets.dsv_lazs4vlvm7nunwixe43pu5rukgwiktndq72b }}
+        run: |
+          npm install -g deepscan
+          deepscan analyze --token $dsv_lazs4vlvm7nunwixe43pu5rukgwiktndq72b --project-path .
