@@ -32,6 +32,15 @@ jobs:
         with:
           node-version: '20.x'
 
+      - name: Install stryker mutator 
+        run: |
+          npm init stryker
+        
+      - name: Run stryker mutator
+        run: |
+          npx stryker run
+
+
       - name: Set up NodeBB
         run: |
           ./nodebb setup '{"url":"https://nodebb-f24.azurewebsites.net:443",
