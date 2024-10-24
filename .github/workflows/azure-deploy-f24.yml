@@ -43,14 +43,15 @@ jobs:
             "redis:host": "${{ secrets.REDIS_HOST }}",
             "redis:port": "6379",
             "redis:password": "${{ secrets.REDIS_PASSWORD }}" }'
-
-      - name: Install frontend dependencies
+            
+      - name: Set up frontend repo
         run: |
-          npm install --production
-    
-      - name: Rebuild NodeBB templates
-        run: ./nodebb build
-          
+          npm install https://github.com/CMU-313/nodebb-frontend-f24-team-five-guys.git
+
+      - name: Rebuild NodeBB Templates
+        run: |
+          ./nodebb build
+
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
