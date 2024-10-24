@@ -31,6 +31,9 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '20.17.0'
+          
+      - name: Install Packages
+        run: npm install
 
       - name: Set up NodeBB
         run: |
