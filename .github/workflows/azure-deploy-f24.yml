@@ -44,8 +44,8 @@ jobs:
             "redis:port": "6379",
             "redis:password": "${{ secrets.REDIS_PASSWORD }}" }'
             
-      - name: Rebuild NodeBB tpl
-        run: ./nodebb build tpl
+      - name: Rebuild NodeBB templates
+        run: ./nodebb build
           
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
