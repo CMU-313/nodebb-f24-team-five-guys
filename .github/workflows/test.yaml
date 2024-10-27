@@ -78,7 +78,7 @@ jobs:
         run: npm run lint
 
       - name: Run retire.js for security vulnerabilities
-        run: npm retire
+        run: retire
 
       - name: Node tests
         run: npm test
