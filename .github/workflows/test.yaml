@@ -78,10 +78,10 @@ jobs:
         run: npm run lint
 
       - name: Install Iroh Tool Globally
-        run: npm install -g iroh
+        run: npm install iroh
         
       - name: Iroh Analysis
-        run: iroh analyze --config=iroh.config.js src/
+        run: node iroh-test.js
 
       - name: Node tests
         run: npm test
