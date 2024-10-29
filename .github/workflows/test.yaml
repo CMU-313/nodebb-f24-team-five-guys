@@ -81,7 +81,7 @@ jobs:
         run: npm install -g iroh
         
       - name: Iroh Analysis
-         run: iroh analyze --config=iroh.config.js src/
+        run: iroh analyze --config=iroh.config.js src/
 
       - name: Node tests
         run: npm test
