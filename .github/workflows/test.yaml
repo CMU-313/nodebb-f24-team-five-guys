@@ -83,6 +83,10 @@ jobs:
       - name: Extract coverage info
         run: npm run coverage
 
+      - name: Install Complexity Report
+        run: npm install complexity-report@latest --no-save
+
+
       - name: Run Code Complexity Analysis
         run: |
           npx complexity-report src > complexity-report.txt
