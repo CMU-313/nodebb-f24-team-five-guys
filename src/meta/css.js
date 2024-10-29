@@ -13,9 +13,9 @@ const file = require('../file');
 const minifier = require('./minifier');
 const utils = require('../utils');
 
-const CSS = module.exports;
+const CustomCSS = module.exports;
 
-CSS.supportedSkins = [
+CustomCSS.supportedSkins = [
 	'cerulean', 'cosmo', 'cyborg', 'darkly', 'flatly', 'journal', 'litera',
 	'lumen', 'lux', 'materia', 'minty', 'morph', 'pulse', 'quartz', 'sandstone',
 	'simplex', 'sketchy', 'slate', 'solar', 'spacelab', 'superhero', 'united',
@@ -210,8 +210,8 @@ async function getBundleMetadata(target) {
 	let isCustomSkin = false;
 	if (target.startsWith('client-')) {
 		skin = target.split('-').slice(1).join('-');
-		const isBootswatchSkin = CSS.supportedSkins.includes(skin);
-		isCustomSkin = !isBootswatchSkin && await CSS.isCustomSkin(skin);
+		const isBootswatchSkin = CustomCSS.supportedSkins.includes(skin);
+		isCustomSkin = !isBootswatchSkin && await CustomCSS.isCustomSkin(skin);
 		target = 'client';
 		if (!isBootswatchSkin && !isCustomSkin) {
 			skin = ''; // invalid skin or deleted use default
@@ -231,7 +231,7 @@ async function getBundleMetadata(target) {
 		themeData.bsVariables = parseInt(themeData.useBSVariables, 10) === 1 ? (themeData.bsVariables || '') : '';
 		themeData.bootswatchSkin = skin;
 		themeData.isCustomSkin = isCustomSkin;
-		const customSkin = isCustomSkin ? await CSS.getCustomSkin(skin) : null;
+		const customSkin = isCustomSkin ? await CustomCSS.getCustomSkin(skin) : null;
 		themeData._variables = customSkin && customSkin._variables;
 	}
 
@@ -252,12 +252,12 @@ async function getBundleMetadata(target) {
 	return { paths: paths, imports: imports };
 }
 
-CSS.getSkinSwitcherOptions = async function (uid) {
+CustomCSS.getSkinSwitcherOptions = async function (uid) {
 	const user = require('../user');
 	const meta = require('./index');
 	const [userSettings, customSkins] = await Promise.all([
 		user.getSettings(uid),
-		CSS.getCustomSkins(),
+		CustomCSS.getCustomSkins(),
 	]);
 
 	const foundCustom = customSkins.find(skin => skin.value === meta.config.bootswatchSkin);
@@ -295,7 +295,7 @@ CSS.getSkinSwitcherOptions = async function (uid) {
 	});
 };
 
-CSS.getCustomSkins = async function (opts = {}) {
+CustomCSS.getCustomSkins = async function (opts = {}) {
 	const meta = require('./index');
 	const slugify = require('../slugify');
 	const { loadVariables } = opts;
@@ -315,21 +315,21 @@ CSS.getCustomSkins = async function (opts = {}) {
 	return returnSkins;
 };
 
-CSS.isSkinValid = async function (skin) {
-	return CSS.supportedSkins.includes(skin) || await CSS.isCustomSkin(skin);
+CustomCSS.isSkinValid = async function (skin) {
+	return CustomCSS.supportedSkins.includes(skin) || await CustomCSS.isCustomSkin(skin);
 };
 
-CSS.isCustomSkin = async function (skin) {
-	const skins = await CSS.getCustomSkins();
+CustomCSS.isCustomSkin = async function (skin) {
+	const skins = await CustomCSS.getCustomSkins();
 	return !!skins.find(s => s.value === skin);
 };
 
-CSS.getCustomSkin = async function (skin) {
-	const skins = await CSS.getCustomSkins({ loadVariables: true });
+CustomCSS.getCustomSkin = async function (skin) {
+	const skins = await CustomCSS.getCustomSkins({ loadVariables: true });
 	return skins.find(s => s.value === skin);
 };
 
-CSS.buildBundle = async function (target, fork) {
+CustomCSS.buildBundle = async function (target, fork) {
 	if (target === 'client') {
 		let files = await fs.promises.readdir(path.join(__dirname, '../../build/public'));
 		files = files.filter(f => f.match(/^client.*\.css$/));

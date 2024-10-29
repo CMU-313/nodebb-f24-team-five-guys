@@ -1,6 +1,7 @@
 'use strict';
 
-const { Command, Option } = require('commander');
+const { Command, Option: ProgramOption } = require('commander');
+
 
 module.exports = () => {
 	const userCmd = new Command('user')
