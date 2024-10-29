@@ -83,5 +83,11 @@ jobs:
       - name: Extract coverage info
         run: npm run coverage
 
+      - name: Run Code Complexity Analysis
+        run: |
+          npx complexity-report --dir src > complexity-report.txt
+        env:
+          CI: true
+
       - name: Test coverage
         uses: coverallsapp/github-action@v2
