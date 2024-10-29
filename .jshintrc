@@ -1,5 +1,5 @@
 {
-    "esversion": 6,    // Use ECMAScript 6+ (ES6 features like let/const)
+    "esversion": 8,    // Use ECMAScript 6+ (ES6 features like let/const)
     "node": true,       // Enable Node.js global variables and scoping
     "browser": true,    // Enable browser global variables (window, document, etc.)
     "undef": true,      // Warn when using undefined variables
