@@ -77,12 +77,8 @@ jobs:
       - name: Run ESLint
         run: npm run lint
 
-      - name: Install Iroh Tool
-        run: npm install iroh
-
-      - name: Iroh test
-        run: node iroh-tool-test-artifacts/iroh-test.js
-
+      - name: Iroh Analysis
+        run: iroh analyze --config=iroh.config.js src/
 
       - name: Node tests
         run: npm test
