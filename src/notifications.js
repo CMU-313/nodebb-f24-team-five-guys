@@ -329,7 +329,7 @@ Notifications.markRead = async function (nid, uid) {
 };
 
 Notifications.markUnread = async function (nid, uid) {
-	if (!(parseInt(uid, 10) > 0) || !nid) {
+	if (parseInt(uid, 10) <= 0 || nid === undefined || nid === null) {
 		return;
 	}
 	const notification = await db.getObject(`notifications:${nid}`);
@@ -346,7 +346,7 @@ Notifications.markUnread = async function (nid, uid) {
 
 Notifications.markReadMultiple = async function (nids, uid) {
 	nids = nids.filter(Boolean);
-	if (!Array.isArray(nids) || !nids.length || !(parseInt(uid, 10) > 0)) {
+	if (Array.isArray(nids) === false || nids.length === false || (parseInt(uid, 10) > 0) === false) {
 		return;
 	}
 
@@ -496,7 +496,7 @@ Notifications.merge = async function (notifications) {
 					break;
 			}
 
-			// Filter out duplicates
+			// Filter out duplicate record
 			notifications = notifications.filter((notifObj, idx) => {
 				if (!notifObj || !notifObj.mergeId) {
 					return true;

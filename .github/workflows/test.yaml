@@ -74,6 +74,12 @@ jobs:
         run: |
           node app --setup="${SETUP}" --ci="${CI}"
 
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run JSHint
+        run: npx jshint src
+      
       - name: Run ESLint
         run: npm run lint
 

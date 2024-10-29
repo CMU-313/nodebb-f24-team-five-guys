@@ -1,0 +1,21 @@
+{
+  "esversion": 9,            
+  "node": true,              
+  "browser": true,            
+  "undef": true,            
+  "unused": false,           
+  "eqeqeq": false,          
+  "curly": false,             
+  "strict": "global",        
+  "latedef": false,           
+  "expr": true,              
+  "shadow": true,             
+  "loopfunc": true,           
+  "globals": {
+    "describe": true,         
+    "it": true,
+    "beforeEach": true,
+    "afterEach": true,
+    "AbortSignal": true       
+  }
+}
