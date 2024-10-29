@@ -496,7 +496,7 @@ Notifications.merge = async function (notifications) {
 					break;
 			}
 
-			// Filter out duplicates
+			// Filter out duplicate record
 			notifications = notifications.filter((notifObj, idx) => {
 				if (!notifObj || !notifObj.mergeId) {
 					return true;
