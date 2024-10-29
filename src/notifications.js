@@ -329,7 +329,7 @@ Notifications.markRead = async function (nid, uid) {
 };
 
 Notifications.markUnread = async function (nid, uid) {
-	if ((parseInt(uid, 10) > 0) === false || nid === false) {
+	if (parseInt(uid, 10) <= 0 || nid === undefined || nid === null) {
 		return;
 	}
 	const notification = await db.getObject(`notifications:${nid}`);
