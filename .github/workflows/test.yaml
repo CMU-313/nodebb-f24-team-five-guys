@@ -85,7 +85,7 @@ jobs:
 
       - name: Run Code Complexity Analysis
         run: |
-          npx complexity-report --dir src > complexity-report.txt
+          npx complexity-report src > complexity-report.txt
         env:
           CI: true
 
