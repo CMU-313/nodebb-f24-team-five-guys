@@ -37,7 +37,7 @@ module.exports = () => {
 		.description('Delete user(s) and/or their content')
 		.arguments('<uids...>')
 		.addOption(
-			new Option('-t, --type [operation]', 'Delete user content ([purge]), leave content ([account]), or delete content only ([content])')
+			new ProgramOption('-t, --type [operation]', 'Delete user content ([purge]), leave content ([account]), or delete content only ([content])')
 				.choices(['purge', 'account', 'content']).default('purge')
 		)
 		.action((...args) => execute(userCommands.deleteUser, args));
