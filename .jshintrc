@@ -1,0 +1,16 @@
+{
+    "esversion": 6,    // Use ECMAScript 6+ (ES6 features like let/const)
+    "node": true,       // Enable Node.js global variables and scoping
+    "browser": true,    // Enable browser global variables (window, document, etc.)
+    "undef": true,      // Warn when using undefined variables
+    "unused": true,     // Warn when variables are declared but not used
+    "eqeqeq": true,     // Require the use of === and !== (strict equality checks)
+    "curly": true,      // Require curly braces for all control statements (if, for, etc.)
+    "strict": "global", // Enforce global "use strict"
+    "globals": {
+      "describe": true, // Allow Mocha testing framework global variables
+      "it": true,
+      "beforeEach": true,
+      "afterEach": true
+    }
+  }
