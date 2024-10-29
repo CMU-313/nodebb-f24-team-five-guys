@@ -19,7 +19,7 @@ module.exports = function (User) {
 	};
 
 	User.updateOnlineUsers = async function (uid) {
-		if (parseInt(uid, 10) <= 0){
+		if (parseInt(uid, 10) <= 0) {
 			return;
 		}
 		const [exists, userOnlineTime] = await Promise.all([
