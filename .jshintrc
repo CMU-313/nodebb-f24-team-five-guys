@@ -7,6 +7,8 @@
     "eqeqeq": true,     // Require the use of === and !== (strict equality checks)
     "curly": true,      // Require curly braces for all control statements (if, for, etc.)
     "strict": "global", // Enforce global "use strict"
+    "latedef": false,
+    "expr": true,       // Allow the use of expressions where normally you would expect to see assignments or function calls
     "globals": {
       "describe": true, // Allow Mocha testing framework global variables
       "it": true,
