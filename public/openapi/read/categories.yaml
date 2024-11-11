@@ -20,6 +20,11 @@ get:
             allOf:
               - type: object
                 properties:
+                  isEnglish:
+                    type: boolean
+                    description: Indicates whether the user prefers English language content
+                    default: false
+                    nullable: true    
                   title:
                     description: The page title
                     type: string
@@ -34,6 +39,11 @@ get:
                         - $ref: ../components/schemas/CategoryObject.yaml#/CategoryObject
                         - type: object
                           properties:
+                            isEnglish:
+                              type: boolean
+                              description: Indicates whether the user prefers English language content
+                              default: false
+                              nullable: true    
                             tagWhitelist:
                               type: array
                               items:
@@ -50,6 +60,11 @@ get:
                                   - $ref: ../components/schemas/CategoryObject.yaml#/CategoryObject
                                   - type: object
                                     properties:
+                                      isEnglish:
+                                        type: boolean
+                                        description: Indicates whether the user prefers English language content
+                                        default: false
+                                        nullable: true    
                                       tagWhitelist:
                                         type: array
                                         items:
@@ -113,6 +128,11 @@ get:
                                                     with `icon:text` for the user's
                                                     auto-generated icon
                                                   example: "#f44336"
+                                                isEnglish:
+                                                  type: boolean
+                                                  description: Indicates whether the user prefers English language content
+                                                  default: false
+                                                  nullable: true     
                                             index:
                                               type: number
                                             cid:
@@ -145,6 +165,11 @@ get:
                                   timestampISO:
                                     type: string
                                     description: An ISO 8601 formatted date string (complementing `timestamp`)
+                                  isEnglish:
+                                    type: boolean
+                                    description: Indicates whether the user prefers English language content
+                                    default: false
+                                    nullable: true    
                                   user:
                                     type: object
                                     properties:
@@ -176,6 +201,11 @@ get:
                                           `icon:text` for the user's
                                           auto-generated icon
                                         example: "#f44336"
+                                      isEnglish:
+                                        type: boolean
+                                        description: Indicates whether the user prefers English language content
+                                        default: false
+                                        nullable: true
                                   index:
                                     type: number
                                   cid:
@@ -190,6 +220,11 @@ get:
                                         type: string
                                       title:
                                         type: string
+                                      isEnglish:
+                                        type: boolean
+                                        description: Indicates whether the user prefers English language content
+                                        default: false
+                                        nullable: true    
                             teaser:
                               type: object
                               properties:
@@ -240,6 +275,11 @@ get:
                                       'icon:bgColor':
                                         type: string
                                         example: '#9c27b0'
+                                      isEnglish:
+                                        type: boolean
+                                        description: Indicates whether the user prefers English language content
+                                        default: false
+                                        nullable: true   
                             imageClass:
                               type: string
               - $ref: ../components/schemas/Pagination.yaml#/Pagination

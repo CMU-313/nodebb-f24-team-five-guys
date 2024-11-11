@@ -75,6 +75,11 @@ CategoryObject:
         subCategoriesPerPage:
           type: number
           description: The number of subcategories to display on the categories and category page
+        isEnglish:
+          type: boolean
+          description: Indicates whether the user prefers English language content
+          default: false
+          nullable: true   
     - type: object
       description: Optional properties that may or may not be present (except for `cid`, which is always present, and is only here as a hack to pass validation)
       properties:

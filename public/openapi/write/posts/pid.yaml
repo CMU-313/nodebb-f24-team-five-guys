@@ -34,6 +34,14 @@ get:
                     description: A topic identifier
                   content:
                     type: string
+                  isEnglish:
+                    type: boolean
+                    description: Indicates whether the user prefers English language content
+                    default: false
+                    nullable: true 
+                  translatedContent:
+                    type: string
+                    nullable: true 
                   timestamp:
                     type: number
                   flagId:
