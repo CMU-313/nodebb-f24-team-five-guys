@@ -10,38 +10,61 @@ const notifications = require('../notifications');
 const translator = require('../translator');
 const batch = require('../batch');
 
+
 module.exports = function (Categories) {
 	Categories.getCategoryTopics = async function (data) {
 		let results = await plugins.hooks.fire('filter:category.topics.prepare', data);
-		const tids = await Categories.getTopicIds(results);
+		// const tids = await Categories.getTopicIds(results);
+		const tids = await Categories.getTopicIds({
+			...results,
+			userFilter: data.userFilter,
+		});
 		let topicsData = await topics.getTopicsByTids(tids, data.uid);
 		topicsData = await user.blocks.filter(data.uid, topicsData);
 
-		if (!topicsData.length) {
-			return { topics: [], uid: data.uid };
-		}
-		topics.calculateTopicIndices(topicsData, data.start);
+		// console.log('topics data', topicsData); // Debug log
+		// console.log('number of topics:', topicsData.length); // Debug log
+		// for (let i = 0; i < topicsData.length; i++) {
+		// 	console.log('current topic author uid'); // Debug log
+		// 	console.log(topicsData[i].uid);
+		// }
+		// Add this block to handle user filtering
+		if (data.userFilter) {
+			const authorUid = await user.getUidByUsername(data.userFilter);
+			console.log('current user filter', data.userFilter); // Debug log
+			console.log('current author uid'); // Debug log
+			console.log(authorUid); // Debug log
 
+			if (authorUid) {
+				topicsData = topicsData.filter(topic => topic.uid === authorUid);
+			} else {
+				topicsData = [];
+			}
+		}
+
+		console.log('Filtered topics count:', topicsData.length); // Debug log
+
+
+		// Add this check before calculating topic indices
+		if (topicsData.length) {
+			topics.calculateTopicIndices(topicsData, data.start);
+		}
 		results = await plugins.hooks.fire('filter:category.topics.get', { cid: data.cid, topics: topicsData, uid: data.uid });
 		return { topics: results.topics, nextStart: data.stop + 1 };
 	};
-
 	Categories.getTopicIds = async function (data) {
 		const [pinnedTids, set] = await Promise.all([
 			Categories.getPinnedTids({ ...data, start: 0, stop: -1 }),
 			Categories.buildTopicsSortedSet(data),
 		]);
-
 		const totalPinnedCount = pinnedTids.length;
 		const pinnedTidsOnPage = pinnedTids.slice(data.start, data.stop !== -1 ? data.stop + 1 : undefined);
 		const pinnedCountOnPage = pinnedTidsOnPage.length;
 		const topicsPerPage = data.stop - data.start + 1;
 		const normalTidsToGet = Math.max(0, topicsPerPage - pinnedCountOnPage);
-
 		if (!normalTidsToGet && data.stop !== -1) {
 			return pinnedTidsOnPage;
 		}
-
 		if (plugins.hooks.hasListeners('filter:categories.getTopicIds')) {
 			const result = await plugins.hooks.fire('filter:categories.getTopicIds', {
 				tids: [],
@@ -53,15 +76,35 @@ module.exports = function (Categories) {
 			});
 			return result && result.tids;
 		}
-
 		let { start } = data;
 		if (start > 0 && totalPinnedCount) {
 			start -= totalPinnedCount - pinnedCountOnPage;
 		}
-
 		const stop = data.stop === -1 ? data.stop : start + normalTidsToGet - 1;
 		let normalTids;
-		if (Array.isArray(set)) {
+		const { userFilter } = data;
+		if (userFilter) {
+			const authorUid = await user.getUidByUsername(userFilter);
+			if (authorUid) {
+				if (Array.isArray(set)) {
+					const uidSet = `cid:${data.cid}:uid:${authorUid}:tids`;
+					normalTids = await db.getSortedSetRevIntersect({
+						sets: [uidSet, ...set],
+						start: start,
+						stop: stop,
+					});
+				} else {
+					const uidSet = `cid:${data.cid}:uid:${authorUid}:tids`;
+					normalTids = await db.getSortedSetRevIntersect({
+						sets: [uidSet, set],
+						start: start,
+						stop: stop,
+					});
+				}
+			} else {
+				normalTids = [];
+			}
+		} else if (Array.isArray(set)) {
 			const weights = set.map((s, index) => (index ? 0 : 1));
 			normalTids = await db.getSortedSetRevIntersect({ sets: set, start: start, stop: stop, weights: weights });
 		} else {
@@ -70,7 +113,6 @@ module.exports = function (Categories) {
 		normalTids = normalTids.filter(tid => !pinnedTids.includes(tid));
 		return pinnedTidsOnPage.concat(normalTids);
 	};
-
 	Categories.getTopicCount = async function (data) {
 		if (plugins.hooks.hasListeners('filter:categories.getTopicCount')) {
 			const result = await plugins.hooks.fire('filter:categories.getTopicCount', {
