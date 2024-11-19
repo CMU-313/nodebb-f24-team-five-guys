@@ -1,0 +1,16 @@
+19:02:37 (35029) INFO ProjectReader Found 548 of 11087 file(s) to be mutated.
+19:02:43 (35029) INFO Instrumenter Instrumented 548 source file(s) with 55870 mutant(s)
+19:02:46 (35029) INFO ConcurrencyTokenProvider Creating 10 test runner process(es).
+19:02:47 (35029) ERROR Stryker Unexpected error occurred while running Stryker Error: ENOTSUP: operation not supported on socket, copyfile '/Users/ethantan/Desktop/Junior_Fall/17313/nodebb-f24-team-five-guys/build/public/plugins/core/inter' -> '/Users/ethantan/Desktop/Junior_Fall/17313/nodebb-f24-team-five-guys/.stryker-tmp/sandbox4604556/build/public/plugins/core/inter'
+    at async Object.copyFile (node:internal/fs/promises:620:10)
+    at async FileSystemAction.execute (file:///Users/ethantan/Desktop/Junior_Fall/17313/nodebb-f24-team-five-guys/node_modules/@stryker-mutator/core/dist/src/fs/file-system.js:16:28)
+    at async file:///Users/ethantan/Desktop/Junior_Fall/17313/nodebb-f24-team-five-guys/node_modules/@stryker-mutator/core/dist/src/fs/file-system.js:33:9 {
+  errno: -45,
+  code: 'ENOTSUP',
+  syscall: 'copyfile',
+  path: '/Users/ethantan/Desktop/Junior_Fall/17313/nodebb-f24-team-five-guys/build/public/plugins/core/inter',
+  dest: '/Users/ethantan/Desktop/Junior_Fall/17313/nodebb-f24-team-five-guys/.stryker-tmp/sandbox4604556/build/public/plugins/core/inter'
+}
+19:02:47 (35029) INFO Stryker This might be a known problem with a solution documented in our troubleshooting guide.
+19:02:47 (35029) INFO Stryker You can find it at https://stryker-mutator.io/docs/stryker-js/troubleshooting/
+19:02:47 (35029) INFO Stryker Still having trouble figuring out what went wrong? Try `npx stryker run --fileLogLevel trace --logLevel debug` to get some more info.
